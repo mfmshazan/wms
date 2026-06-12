@@ -49,5 +49,43 @@ export function useProducts() {
     return products.find((p) => p.id === id);
   }
 
-  return { products, addProduct, updateProduct, deleteProduct, getProductById };
+  /** Increase a product's qty by the given amount (Inbound). */
+  function incrementStock(sku, qty) {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.sku === sku ? { ...p, qty: p.qty + Number(qty) } : p
+      )
+    );
+  }
+
+  /**
+   * Decrease a product's qty by the given amount (Outbound).
+   * Never goes below 0. Returns false if stock is insufficient, true on success.
+   * @param {string} sku
+   * @param {number} qty
+   * @returns {boolean}
+   */
+  function decrementStock(sku, qty) {
+    const product = products.find((p) => p.sku === sku);
+    if (!product || product.qty < Number(qty)) return false;
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.sku === sku
+          ? { ...p, qty: Math.max(0, p.qty - Number(qty)) }
+          : p
+      )
+    );
+    return true;
+  }
+
+  return {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    getProductById,
+    incrementStock,
+    decrementStock,
+  };
 }
+
