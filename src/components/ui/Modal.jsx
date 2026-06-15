@@ -3,8 +3,10 @@ import { useEffect } from "react";
 /**
  * Modal — animated backdrop + card.
  * Click backdrop or press Escape to close.
+ * @param {string} [size="md"] - "md" (default, max-w-md) | "2xl" (max-w-2xl)
  */
-export function Modal({ title, onClose, children }) {
+export function Modal({ title, onClose, children, size = "md" }) {
+  const sizeClass = size === "2xl" ? "max-w-2xl" : "max-w-md";
   // Close on Escape key
   useEffect(() => {
     function handleKey(e) {
@@ -21,7 +23,7 @@ export function Modal({ title, onClose, children }) {
     >
       {/* Card — stop propagation so clicks inside don't close */}
       <div
-        className="bg-wms-surface border border-wms-border rounded-xl p-6 w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        className={`bg-wms-surface border border-wms-border rounded-xl p-6 w-full ${sizeClass} shadow-2xl animate-in fade-in zoom-in-95 duration-200`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

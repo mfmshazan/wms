@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useProducts } from "./hooks/useProducts";
 import { useMovements } from "./hooks/useMovements";
+import { useInspections } from "./hooks/useInspections";
 import { useToast } from "./hooks/useToast";
 
 import { Header } from "./components/layout/Header";
@@ -19,6 +20,11 @@ import { MovementTable } from "./components/movements/MovementTable";
 import { ReceivingForm } from "./components/movements/ReceivingForm";
 import { DispatchForm } from "./components/movements/DispatchForm";
 
+// Inspections view
+import { InspectionStatsBar } from "./components/quality/InspectionStatsBar";
+import { InspectionTable } from "./components/quality/InspectionTable";
+import { InspectionForm } from "./components/quality/InspectionForm";
+
 export default function App() {
   // ── Hooks ──────────────────────────────────────────────────────────────────
   const {
@@ -31,14 +37,15 @@ export default function App() {
   } = useProducts();
 
   const { movements, addMovement, deleteMovement } = useMovements();
+  const { inspections, addInspection, deleteInspection } = useInspections();
   const { toast, showToast } = useToast();
 
   // ── View state ─────────────────────────────────────────────────────────────
-  // "products" | "movements"
+  // "products" | "movements" | "inspections"
   const [activeView, setActiveView] = useState("products");
 
   // ── Modal state ────────────────────────────────────────────────────────────
-  // null | "add" | "edit" | "delete" | "receive" | "dispatch"
+  // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection"
   const [modal, setModal] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
@@ -124,6 +131,23 @@ export default function App() {
     showToast("Movement deleted", "danger");
   }
 
+  // ── Inspection handlers ────────────────────────────────────────────────────
+  function handleAddInspection(inspectionData) {
+    addInspection(inspectionData);
+    showToast("Inspection recorded successfully", "success");
+    setModal(null);
+  }
+
+  function handleDeleteInspection(inspection) {
+    deleteInspection(inspection.id);
+    showToast("Inspection deleted", "danger");
+  }
+
+  // onView is handled locally inside InspectionTable (read-only detail modal)
+  function handleViewInspection() {
+    // No-op at App level — InspectionTable manages the detail modal internally
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-wms-bg">
@@ -134,11 +158,12 @@ export default function App() {
         onAddProduct={handleAddClick}
         onReceive={() => setModal("receive")}
         onDispatch={() => setModal("dispatch")}
+        onNewInspection={() => setModal("inspection")}
       />
 
       {/* ── Main content ── */}
       <main className="max-w-screen-xl mx-auto px-6 py-6">
-        {activeView === "products" ? (
+        {activeView === "products" && (
           <>
             {/* Page title */}
             <div className="mb-6">
@@ -165,7 +190,9 @@ export default function App() {
               onDelete={handleDeleteClick}
             />
           </>
-        ) : (
+        )}
+
+        {activeView === "movements" && (
           <>
             {/* Page title */}
             <div className="mb-6">
@@ -173,7 +200,7 @@ export default function App() {
                 Stock Movements
               </h2>
               <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
-                Inbound & outbound movement log
+                Inbound &amp; outbound movement log
               </p>
             </div>
 
@@ -183,6 +210,28 @@ export default function App() {
               movements={movements}
               products={products}
               onDelete={handleDeleteMovement}
+            />
+          </>
+        )}
+
+        {activeView === "inspections" && (
+          <>
+            {/* Page title */}
+            <div className="mb-6">
+              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
+                Quality Inspections
+              </h2>
+              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
+                Inspection checklists &amp; audit trail
+              </p>
+            </div>
+
+            <InspectionStatsBar inspections={inspections} />
+
+            <InspectionTable
+              inspections={inspections}
+              onView={handleViewInspection}
+              onDelete={handleDeleteInspection}
             />
           </>
         )}
@@ -217,6 +266,16 @@ export default function App() {
         <DispatchForm
           products={products}
           onSave={handleDispatch}
+          onClose={() => setModal(null)}
+        />
+      )}
+
+      {/* ── Inspection Modals ── */}
+      {modal === "inspection" && (
+        <InspectionForm
+          products={products}
+          movements={movements}
+          onSave={handleAddInspection}
           onClose={() => setModal(null)}
         />
       )}
