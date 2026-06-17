@@ -183,3 +183,89 @@ export const INITIAL_INSPECTIONS = [
     timestamp: "2025-06-05T13:30:00.000Z",
   },
 ];
+
+// ── Defect / NCR constants ──────────────────────────────────────────────────
+
+export const DEFECT_TYPES = [
+  "Dimensional",
+  "Surface Finish",
+  "Functional",
+  "Labeling",
+  "Packaging",
+  "Contamination",
+  "Missing Component",
+  "Wrong Item",
+  "Other",
+];
+
+export const DEFECT_SEVERITIES = ["Critical", "Major", "Minor"];
+
+export const DEFECT_STATUSES = ["Open", "Under Review", "Resolved", "Closed"];
+
+export const DEFECT_DISPOSITIONS = [
+  "Scrap",
+  "Rework",
+  "Return to Supplier",
+  "Accept as-is",
+  "Pending Decision",
+];
+
+export const INITIAL_DEFECTS = [
+  {
+    id: 1,
+    defectId: "DEF-0001",
+    sku: "SKU-0002",
+    productName: "Corrugated Box 30×20cm",
+    inspectionId: "INS-0002",
+    criterionLabel: "No visible damage",
+    type: "Packaging",
+    severity: "Major",
+    status: "Open",
+    disposition: "Pending Decision",
+    quantity: 12,
+    description: "12 boxes in outer layer had water damage.",
+    rootCause: "",
+    reportedBy: "Bob Lim",
+    assignedTo: "Alice Tan",
+    timestamp: "2025-06-05T14:00:00.000Z",
+    resolvedAt: null,
+  },
+  {
+    id: 2,
+    defectId: "DEF-0002",
+    sku: "SKU-0001",
+    productName: "Arduino Nano Rev3",
+    inspectionId: null,
+    criterionLabel: "",
+    type: "Functional",
+    severity: "Critical",
+    status: "Under Review",
+    disposition: "Return to Supplier",
+    quantity: 5,
+    description: "Microcontroller fails to power on when connected via USB.",
+    rootCause: "Possible short circuit in the USB port soldering.",
+    reportedBy: "Alice Tan",
+    assignedTo: "John Doe",
+    timestamp: "2025-06-10T09:30:00.000Z",
+    resolvedAt: null,
+  },
+  {
+    id: 3,
+    defectId: "DEF-0003",
+    sku: "SKU-0003",
+    productName: "Organic Oat Flour 1kg",
+    inspectionId: null,
+    criterionLabel: "",
+    type: "Labeling",
+    severity: "Minor",
+    status: "Resolved",
+    disposition: "Accept as-is",
+    quantity: 58,
+    description: "Best before date printed slightly smudged but still legible.",
+    rootCause: "Printer alignment issue during packaging.",
+    reportedBy: "Carol White",
+    assignedTo: "Bob Lim",
+    timestamp: "2025-05-20T11:15:00.000Z",
+    resolvedAt: "2025-05-21T15:45:00.000Z",
+  },
+];

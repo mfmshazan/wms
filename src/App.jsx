@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useProducts } from "./hooks/useProducts";
 import { useMovements } from "./hooks/useMovements";
 import { useInspections } from "./hooks/useInspections";
+import { useDefects } from "./hooks/useDefects";
 import { useToast } from "./hooks/useToast";
 
 import { Header } from "./components/layout/Header";
@@ -25,6 +26,13 @@ import { InspectionStatsBar } from "./components/quality/InspectionStatsBar";
 import { InspectionTable } from "./components/quality/InspectionTable";
 import { InspectionForm } from "./components/quality/InspectionForm";
 
+// Defects view
+import { DefectStatsBar } from "./components/quality/DefectStatsBar";
+import { DefectTable } from "./components/quality/DefectTable";
+import { DefectForm } from "./components/quality/DefectForm";
+import { DefectDetailModal } from "./components/quality/DefectDetailModal";
+import { DefectStatusModal } from "./components/quality/DefectStatusModal";
+
 export default function App() {
   // ── Hooks ──────────────────────────────────────────────────────────────────
   const {
@@ -38,6 +46,7 @@ export default function App() {
 
   const { movements, addMovement, deleteMovement } = useMovements();
   const { inspections, addInspection, deleteInspection } = useInspections();
+  const { defects, addDefect, updateDefect, deleteDefect } = useDefects();
   const { toast, showToast } = useToast();
 
   // ── View state ─────────────────────────────────────────────────────────────
@@ -45,9 +54,11 @@ export default function App() {
   const [activeView, setActiveView] = useState("products");
 
   // ── Modal state ────────────────────────────────────────────────────────────
-  // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection"
+  // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection" | "defect" | "defectDetail" | "defectStatus" | "ncrFromDefect"
   const [modal, setModal] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedDefect, setSelectedDefect] = useState(null);
+  const [defectPrefill, setDefectPrefill] = useState(null);
 
   // ── Products search & filter ───────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -148,6 +159,52 @@ export default function App() {
     // No-op at App level — InspectionTable manages the detail modal internally
   }
 
+  // ── Defect handlers ────────────────────────────────────────────────────────
+  function handleAddDefect(defectData) {
+    addDefect(defectData);
+    showToast("Defect logged successfully", "success");
+    setModal(null);
+    setDefectPrefill(null);
+  }
+
+  function handleUpdateDefectStatus(id, updates) {
+    updateDefect(id, updates);
+    showToast("Defect status updated", "success");
+    setModal(null);
+    setSelectedDefect(null);
+  }
+
+  function handleDeleteDefect(defect) {
+    deleteDefect(defect.id);
+    showToast("Defect deleted", "danger");
+  }
+
+  function handleConvertToNCR(defect) {
+    setSelectedDefect(defect);
+    setModal("ncrFromDefect");
+    showToast("NCR creation coming in Phase 3c", "info");
+  }
+
+  function handleConvertInspectionToDefect(inspection, criterion) {
+    setDefectPrefill({
+      sku: inspection.sku,
+      productName: inspection.productName,
+      inspectionId: inspection.inspectionId,
+      criterionLabel: criterion.label,
+    });
+    setModal("defect");
+  }
+
+  function handleEditDefect(defect) {
+    setSelectedDefect(defect);
+    setModal("defectStatus");
+  }
+
+  function handleViewDefect(defect) {
+    setSelectedDefect(defect);
+    setModal("defectDetail");
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-wms-bg">
@@ -159,6 +216,10 @@ export default function App() {
         onReceive={() => setModal("receive")}
         onDispatch={() => setModal("dispatch")}
         onNewInspection={() => setModal("inspection")}
+        onLogDefect={() => {
+          setDefectPrefill(null);
+          setModal("defect");
+        }}
       />
 
       {/* ── Main content ── */}
@@ -232,6 +293,31 @@ export default function App() {
               inspections={inspections}
               onView={handleViewInspection}
               onDelete={handleDeleteInspection}
+              onLogDefect={handleConvertInspectionToDefect}
+            />
+          </>
+        )}
+
+        {activeView === "defects" && (
+          <>
+            {/* Page title */}
+            <div className="mb-6">
+              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
+                Defect Log
+              </h2>
+              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
+                Track and resolve product issues
+              </p>
+            </div>
+
+            <DefectStatsBar defects={defects} />
+
+            <DefectTable
+              defects={defects}
+              onView={handleViewDefect}
+              onEdit={handleEditDefect}
+              onDelete={handleDeleteDefect}
+              onConvertToNCR={handleConvertToNCR}
             />
           </>
         )}
@@ -277,6 +363,42 @@ export default function App() {
           movements={movements}
           onSave={handleAddInspection}
           onClose={() => setModal(null)}
+        />
+      )}
+
+      {/* ── Defect Modals ── */}
+      {modal === "defect" && (
+        <DefectForm
+          products={products}
+          inspections={inspections}
+          prefill={defectPrefill}
+          onSave={handleAddDefect}
+          onClose={() => {
+            setModal(null);
+            setDefectPrefill(null);
+          }}
+        />
+      )}
+
+      {modal === "defectDetail" && (
+        <DefectDetailModal
+          defect={selectedDefect}
+          onClose={() => {
+            setModal(null);
+            setSelectedDefect(null);
+          }}
+          onEdit={handleEditDefect}
+        />
+      )}
+
+      {modal === "defectStatus" && (
+        <DefectStatusModal
+          defect={selectedDefect}
+          onSave={handleUpdateDefectStatus}
+          onClose={() => {
+            setModal(null);
+            setSelectedDefect(null);
+          }}
         />
       )}
 

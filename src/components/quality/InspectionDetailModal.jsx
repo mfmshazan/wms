@@ -30,7 +30,7 @@ function resultVariant(result) {
  *   inspection - full inspection object
  *   onClose    - closes the modal
  */
-export function InspectionDetailModal({ inspection, onClose }) {
+export function InspectionDetailModal({ inspection, onClose, onLogDefect }) {
   if (!inspection) return null;
 
   const failCount = inspection.criteria.filter((c) => c.result === "Fail").length;
@@ -116,7 +116,17 @@ export function InspectionDetailModal({ inspection, onClose }) {
                 }`}
               >
                 <span className="text-sm text-wms-text">{c.label}</span>
-                <Badge variant={resultVariant(c.result)}>{c.result}</Badge>
+                <div className="flex items-center gap-2">
+                  {c.result === "Fail" && onLogDefect && (
+                    <button
+                      onClick={() => onLogDefect(inspection, c)}
+                      className="text-wms-orange text-xs px-2 py-0.5 border border-wms-orange rounded hover:bg-orange-900/20 transition-colors"
+                    >
+                      Log as Defect
+                    </button>
+                  )}
+                  <Badge variant={resultVariant(c.result)}>{c.result}</Badge>
+                </div>
               </div>
             ))}
           </div>

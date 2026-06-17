@@ -17,6 +17,7 @@ export function Header({
   onReceive,
   onDispatch,
   onNewInspection,
+  onLogDefect,
 }) {
   return (
     <header className="sticky top-0 z-30 bg-wms-bg/80 backdrop-blur-md border-b border-wms-border">
@@ -82,6 +83,17 @@ export function Header({
             }`}
           >
             Inspections
+          </button>
+          <button
+            id="nav-defects"
+            onClick={() => onViewChange("defects")}
+            className={`px-4 py-1.5 rounded-lg text-xs font-mono transition-colors border ${
+              activeView === "defects"
+                ? "bg-orange-900/40 border-orange-700/60 text-wms-orange"
+                : "bg-transparent border-transparent text-wms-muted hover:text-wms-text hover:bg-white/5"
+            }`}
+          >
+            Defects
           </button>
         </nav>
 
@@ -159,6 +171,25 @@ export function Header({
                 />
               </svg>
               New Inspection
+            </Button>
+          )}
+
+          {activeView === "defects" && (
+            <Button variant="primary" onClick={onLogDefect} id="log-defect-btn">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+              Log Defect
             </Button>
           )}
         </div>
