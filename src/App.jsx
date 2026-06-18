@@ -3,6 +3,7 @@ import { useProducts } from "./hooks/useProducts";
 import { useMovements } from "./hooks/useMovements";
 import { useInspections } from "./hooks/useInspections";
 import { useDefects } from "./hooks/useDefects";
+import { useNCRs } from "./hooks/useNCRs";
 import { useToast } from "./hooks/useToast";
 
 import { Header } from "./components/layout/Header";
@@ -33,6 +34,14 @@ import { DefectForm } from "./components/quality/DefectForm";
 import { DefectDetailModal } from "./components/quality/DefectDetailModal";
 import { DefectStatusModal } from "./components/quality/DefectStatusModal";
 
+// NCRs view
+import { NCRStatsBar } from "./components/quality/NCRStatsBar";
+import { NCRBoard } from "./components/quality/NCRBoard";
+import { NCRForm } from "./components/quality/NCRForm";
+import { NCRDetailModal } from "./components/quality/NCRDetailModal";
+import { CAPAForm } from "./components/quality/CAPAForm";
+import { CAPAStatusModal } from "./components/quality/CAPAStatusModal";
+
 export default function App() {
   // ── Hooks ──────────────────────────────────────────────────────────────────
   const {
@@ -47,6 +56,15 @@ export default function App() {
   const { movements, addMovement, deleteMovement } = useMovements();
   const { inspections, addInspection, deleteInspection } = useInspections();
   const { defects, addDefect, updateDefect, deleteDefect } = useDefects();
+  const {
+    ncrs,
+    addNCR,
+    updateNCR,
+    deleteNCR,
+    addCAPA,
+    updateCAPA,
+    deleteCAPA,
+  } = useNCRs();
   const { toast, showToast } = useToast();
 
   // ── View state ─────────────────────────────────────────────────────────────
@@ -54,11 +72,14 @@ export default function App() {
   const [activeView, setActiveView] = useState("products");
 
   // ── Modal state ────────────────────────────────────────────────────────────
-  // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection" | "defect" | "defectDetail" | "defectStatus" | "ncrFromDefect"
+  // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection" | "defect" | "defectDetail" | "defectStatus" | "ncr" | "ncrDetail" | "capa" | "capaStatus"
   const [modal, setModal] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedDefect, setSelectedDefect] = useState(null);
   const [defectPrefill, setDefectPrefill] = useState(null);
+  const [selectedNCR, setSelectedNCR] = useState(null);
+  const [ncrPrefill, setNcrPrefill] = useState(null);
+  const [selectedCAPA, setSelectedCAPA] = useState(null);
 
   // ── Products search & filter ───────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -180,9 +201,12 @@ export default function App() {
   }
 
   function handleConvertToNCR(defect) {
-    setSelectedDefect(defect);
-    setModal("ncrFromDefect");
-    showToast("NCR creation coming in Phase 3c", "info");
+    setNcrPrefill({
+      defectId: defect.defectId,
+      defectSku: defect.sku,
+      productName: defect.productName,
+    });
+    setModal("ncr");
   }
 
   function handleConvertInspectionToDefect(inspection, criterion) {
@@ -205,6 +229,66 @@ export default function App() {
     setModal("defectDetail");
   }
 
+  // ── NCR & CAPA handlers ────────────────────────────────────────────────────
+  function handleAddNCR(ncrData) {
+    addNCR(ncrData);
+    showToast("NCR raised successfully", "success");
+    setModal(null);
+    setNcrPrefill(null);
+  }
+
+  function handleNCRStatusChange(ncr, newStatus) {
+    updateNCR(ncr.id, {
+      status: newStatus,
+      closedAt: newStatus === "Closed" ? new Date().toISOString() : ncr.closedAt,
+    });
+    showToast(`NCR moved to ${newStatus}`, "success");
+  }
+
+  function handleDeleteNCR(ncr) {
+    deleteNCR(ncr.id);
+    showToast("NCR deleted", "danger");
+  }
+
+  function handleViewNCR(ncr) {
+    setSelectedNCR(ncr);
+    setModal("ncrDetail");
+  }
+
+  function handleAddCAPA(ncrId, capaData) {
+    addCAPA(ncrId, capaData);
+    showToast("CAPA action added", "success");
+    setModal("ncrDetail");
+  }
+
+  function handleUpdateCAPA(ncrId, capaId, updates) {
+    updateCAPA(ncrId, capaId, updates);
+    showToast("CAPA updated", "success");
+    setModal("ncrDetail");
+  }
+
+  function handleDeleteCAPA(ncrId, capaId) {
+    deleteCAPA(ncrId, capaId);
+    showToast("CAPA removed", "danger");
+  }
+
+  function handleOpenCAPAForm(ncrId) {
+    const ncr = ncrs.find((n) => n.ncrId === ncrId);
+    if (ncr) {
+      setSelectedNCR(ncr);
+      setModal("capa");
+    }
+  }
+
+  function handleOpenCAPAStatus(ncrId, capa) {
+    const ncr = ncrs.find((n) => n.ncrId === ncrId);
+    if (ncr) {
+      setSelectedNCR(ncr);
+      setSelectedCAPA(capa);
+      setModal("capaStatus");
+    }
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-wms-bg">
@@ -219,6 +303,10 @@ export default function App() {
         onLogDefect={() => {
           setDefectPrefill(null);
           setModal("defect");
+        }}
+        onRaiseNCR={() => {
+          setNcrPrefill(null);
+          setModal("ncr");
         }}
       />
 
@@ -321,6 +409,28 @@ export default function App() {
             />
           </>
         )}
+
+        {activeView === "ncrs" && (
+          <>
+            <div className="mb-6">
+              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
+                Non-Conformance Reports
+              </h2>
+              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
+                NCR workflow and CAPA management
+              </p>
+            </div>
+
+            <NCRStatsBar ncrs={ncrs} />
+
+            <NCRBoard
+              ncrs={ncrs}
+              onView={handleViewNCR}
+              onDelete={handleDeleteNCR}
+              onStatusChange={handleNCRStatusChange}
+            />
+          </>
+        )}
       </main>
 
       {/* ── Product Modals ── */}
@@ -398,6 +508,54 @@ export default function App() {
           onClose={() => {
             setModal(null);
             setSelectedDefect(null);
+          }}
+        />
+      )}
+
+      {/* ── NCR & CAPA Modals ── */}
+      {modal === "ncr" && (
+        <NCRForm
+          defects={defects}
+          prefill={ncrPrefill}
+          onSave={handleAddNCR}
+          onClose={() => {
+            setModal(null);
+            setNcrPrefill(null);
+          }}
+        />
+      )}
+
+      {modal === "ncrDetail" && (
+        <NCRDetailModal
+          ncr={selectedNCR}
+          defects={defects}
+          onClose={() => {
+            setModal(null);
+            setSelectedNCR(null);
+          }}
+          onStatusChange={handleNCRStatusChange}
+          onAddCAPA={handleOpenCAPAForm}
+          onUpdateCAPA={handleOpenCAPAStatus}
+          onDeleteCAPA={handleDeleteCAPA}
+          onViewDefect={handleViewDefect}
+        />
+      )}
+
+      {modal === "capa" && (
+        <CAPAForm
+          onSave={(capaData) => handleAddCAPA(selectedNCR.ncrId, capaData)}
+          onClose={() => setModal("ncrDetail")}
+        />
+      )}
+
+      {modal === "capaStatus" && (
+        <CAPAStatusModal
+          capa={selectedCAPA}
+          ncrId={selectedNCR.ncrId}
+          onSave={handleUpdateCAPA}
+          onClose={() => {
+            setSelectedCAPA(null);
+            setModal("ncrDetail");
           }}
         />
       )}

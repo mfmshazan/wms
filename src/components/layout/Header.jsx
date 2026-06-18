@@ -18,6 +18,7 @@ export function Header({
   onDispatch,
   onNewInspection,
   onLogDefect,
+  onRaiseNCR,
 }) {
   return (
     <header className="sticky top-0 z-30 bg-wms-bg/80 backdrop-blur-md border-b border-wms-border">
@@ -94,6 +95,17 @@ export function Header({
             }`}
           >
             Defects
+          </button>
+          <button
+            id="nav-ncrs"
+            onClick={() => onViewChange("ncrs")}
+            className={`px-4 py-1.5 rounded-lg text-xs font-mono transition-colors border ${
+              activeView === "ncrs"
+                ? "bg-wms-surface border-wms-text text-wms-text shadow-sm"
+                : "bg-transparent border-transparent text-wms-muted hover:text-wms-text hover:bg-white/5"
+            }`}
+          >
+            NCRs
           </button>
         </nav>
 
@@ -190,6 +202,25 @@ export function Header({
                 />
               </svg>
               Log Defect
+            </Button>
+          )}
+
+          {activeView === "ncrs" && (
+            <Button variant="primary" onClick={onRaiseNCR} id="raise-ncr-btn">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+              Raise NCR
             </Button>
           )}
         </div>

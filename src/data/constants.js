@@ -269,3 +269,123 @@ export const INITIAL_DEFECTS = [
     resolvedAt: "2025-05-21T15:45:00.000Z",
   },
 ];
+
+// ── NCR & CAPA constants ───────────────────────────────────────────────────
+
+export const NCR_STATUSES = [
+  "Open",
+  "In Review",
+  "Action Assigned",
+  "Resolved",
+  "Closed"
+];
+
+export const NCR_TYPES = [
+  "Supplier Non-Conformance",
+  "Internal Process",
+  "Customer Complaint",
+  "Equipment Failure",
+  "Documentation Error",
+  "Other"
+];
+
+export const NCR_PRIORITIES = ["Critical", "High", "Medium", "Low"];
+
+export const CAPA_TYPES = [
+  "Corrective Action",
+  "Preventive Action"
+];
+
+export const CAPA_STATUSES = [
+  "Planned",
+  "In Progress",
+  "Completed",
+  "Verified",
+  "Cancelled"
+];
+
+export const INITIAL_NCRS = [
+  {
+    id: 1,
+    ncrId: "NCR-0001",
+    defectId: "DEF-0002",
+    defectSku: "SKU-0001",
+    productName: "Arduino Nano Rev3",
+    type: "Supplier Non-Conformance",
+    priority: "Critical",
+    status: "In Review",
+    title: "USB Port Short Circuit",
+    description: "Multiple units failed power-on due to soldering shorts on the USB port.",
+    immediateAction: "Quarantined remaining stock from this supplier batch.",
+    raisedBy: "Alice Tan",
+    assignedTo: "John Doe",
+    targetDate: "2025-06-20",
+    closedAt: null,
+    timestamp: "2025-06-11T10:00:00.000Z",
+    capas: [
+      {
+        id: 1,
+        capaId: "CAPA-0001",
+        type: "Corrective Action",
+        status: "In Progress",
+        description: "Require supplier to provide 100% functional test report for next batch.",
+        assignedTo: "John Doe",
+        targetDate: "2025-06-18",
+        completedAt: null,
+        verificationNotes: "",
+        effectiveness: "Pending"
+      }
+    ]
+  },
+  {
+    id: 2,
+    ncrId: "NCR-0002",
+    defectId: "DEF-0001",
+    defectSku: "SKU-0002",
+    productName: "Corrugated Box 30×20cm",
+    type: "Internal Process",
+    priority: "Medium",
+    status: "Open",
+    title: "Water Damage During Storage",
+    description: "Pallet left near open bay door during rain storm.",
+    immediateAction: "Moved unaffected boxes to dry racks. Scrapped 12 damaged units.",
+    raisedBy: "Bob Lim",
+    assignedTo: "Alice Tan",
+    targetDate: "2025-06-15",
+    closedAt: null,
+    timestamp: "2025-06-06T09:00:00.000Z",
+    capas: []
+  },
+  {
+    id: 3,
+    ncrId: "NCR-0003",
+    defectId: null,
+    defectSku: "SKU-0003",
+    productName: "Organic Oat Flour 1kg",
+    type: "Documentation Error",
+    priority: "Low",
+    status: "Closed",
+    title: "Incorrect Pallet Label",
+    description: "Pallet label showed wrong batch number compared to individual bags.",
+    immediateAction: "Reprinted and applied correct pallet label.",
+    raisedBy: "Carol White",
+    assignedTo: "Bob Lim",
+    targetDate: "2025-05-25",
+    closedAt: "2025-05-22T14:30:00.000Z",
+    timestamp: "2025-05-21T08:00:00.000Z",
+    capas: [
+      {
+        id: 2,
+        capaId: "CAPA-0002",
+        type: "Preventive Action",
+        status: "Verified",
+        description: "Update WMS printing script to pull batch directly from PO instead of manual entry.",
+        assignedTo: "Bob Lim",
+        targetDate: "2025-05-24",
+        completedAt: "2025-05-22T10:00:00.000Z",
+        verificationNotes: "Tested 5 sample prints. All correct.",
+        effectiveness: "Effective"
+      }
+    ]
+  }
+];
