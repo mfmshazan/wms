@@ -1,5 +1,7 @@
 import { useDashboard } from "../../hooks/useDashboard";
 import { KPICard } from "./KPICard";
+import MovementChart from "./MovementChart";
+import QualityTrendChart from "./QualityTrendChart";
 
 export function DashboardPage({ products, movements, inspections, defects, ncrs }) {
   const {
@@ -134,10 +136,8 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
         <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
           Stock Movements
         </p>
-        <div className="bg-wms-surface border border-wms-border rounded-xl p-5 min-h-[280px] flex items-center justify-center">
-          <p className="text-xs font-mono text-wms-muted">
-            [ MovementChart placeholder — built in Phase 4a-3 ]
-          </p>
+        <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
+          <MovementChart movements={mv} />
         </div>
       </div>
 
@@ -146,10 +146,8 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
           <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
             Inspection Quality
           </p>
-          <div className="bg-wms-surface border border-wms-border rounded-xl p-5 min-h-[280px] flex items-center justify-center">
-            <p className="text-xs font-mono text-wms-muted">
-              [ QualityTrendChart placeholder — built in Phase 4a-4 ]
-            </p>
+          <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
+            <QualityTrendChart quality={quality} />
           </div>
         </div>
         <div>
