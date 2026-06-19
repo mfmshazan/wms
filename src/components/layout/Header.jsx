@@ -53,6 +53,17 @@ export function Header({
         {/* ── Nav tabs ── */}
         <nav className="flex gap-1 ml-6">
           <button
+            id="nav-dashboard"
+            onClick={() => onViewChange("dashboard")}
+            className={`px-4 py-1.5 rounded-lg text-xs font-mono transition-colors border ${
+              activeView === "dashboard"
+                ? "bg-wms-surface border-wms-text text-wms-text shadow-sm"
+                : "bg-transparent border-transparent text-wms-muted hover:text-wms-text hover:bg-white/5"
+            }`}
+          >
+            Dashboard
+          </button>
+          <button
             id="nav-products"
             onClick={() => onViewChange("products")}
             className={`px-4 py-1.5 rounded-lg text-xs font-mono transition-colors border ${
@@ -111,7 +122,7 @@ export function Header({
 
         {/* ── Context actions ── */}
         <div className="ml-auto flex items-center gap-2">
-          {activeView === "products" && (
+          {activeView !== "dashboard" && activeView === "products" && (
             <Button variant="primary" onClick={onAddProduct} id="add-product-btn">
               <svg
                 viewBox="0 0 24 24"

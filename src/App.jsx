@@ -9,6 +9,9 @@ import { useToast } from "./hooks/useToast";
 import { Header } from "./components/layout/Header";
 import { Toast } from "./components/ui/Toast";
 
+// Dashboard view
+import { DashboardPage } from "./components/dashboard/DashboardPage";
+
 // Products view
 import { StatsBar } from "./components/products/StatsBar";
 import { SearchBar } from "./components/products/SearchBar";
@@ -68,8 +71,8 @@ export default function App() {
   const { toast, showToast } = useToast();
 
   // ── View state ─────────────────────────────────────────────────────────────
-  // "products" | "movements" | "inspections"
-  const [activeView, setActiveView] = useState("products");
+  // "dashboard" | "products" | "movements" | "inspections" | "defects" | "ncrs"
+  const [activeView, setActiveView] = useState("dashboard");
 
   // ── Modal state ────────────────────────────────────────────────────────────
   // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection" | "defect" | "defectDetail" | "defectStatus" | "ncr" | "ncrDetail" | "capa" | "capaStatus"
@@ -312,6 +315,16 @@ export default function App() {
 
       {/* ── Main content ── */}
       <main className="max-w-screen-xl mx-auto px-6 py-6">
+        {activeView === "dashboard" && (
+          <DashboardPage
+            products={products}
+            movements={movements}
+            inspections={inspections}
+            defects={defects}
+            ncrs={ncrs}
+          />
+        )}
+
         {activeView === "products" && (
           <>
             {/* Page title */}
