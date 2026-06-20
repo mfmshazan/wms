@@ -3,6 +3,7 @@ import { KPICard } from "./KPICard";
 import MovementChart from "./MovementChart";
 import QualityTrendChart from "./QualityTrendChart";
 import DefectChart from "./DefectChart";
+import NCRStatusChart from "./NCRStatusChart";
 
 export function DashboardPage({ products, movements, inspections, defects, ncrs }) {
   const {
@@ -165,10 +166,8 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
         <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
           NCR & CAPA Status
         </p>
-        <div className="bg-wms-surface border border-wms-border rounded-xl p-5 min-h-[280px] flex items-center justify-center">
-          <p className="text-xs font-mono text-wms-muted">
-            [ NCRStatusChart placeholder — built in Phase 4a-6 ]
-          </p>
+        <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
+          <NCRStatusChart ncrs={nc} />
         </div>
       </div>
     </>
