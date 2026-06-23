@@ -4,6 +4,7 @@ import MovementChart from "./MovementChart";
 import QualityTrendChart from "./QualityTrendChart";
 import DefectChart from "./DefectChart";
 import NCRStatusChart from "./NCRStatusChart";
+import InventoryChart from "./InventoryChart";
 
 export function DashboardPage({ products, movements, inspections, defects, ncrs }) {
   const {
@@ -122,20 +123,18 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
         />
       </div>
 
-      {/* ── Row 3 through 6: Chart placeholders ── */}
-      <div className="mt-6">
+      {/* ── Row 3 through 6: Charts ── */}
+      <div>
         <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
           Inventory Health
         </p>
-        <div className="bg-wms-surface border border-wms-border rounded-xl p-5 min-h-[280px] flex items-center justify-center">
-          <p className="text-xs font-mono text-wms-muted">
-            [ InventoryChart placeholder — built in Phase 4a-2 ]
-          </p>
+        <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
+          <InventoryChart inventory={inventory} />
         </div>
       </div>
 
-      <div className="mt-6">
-        <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
+      <div>
+        <p className="text-xs uppercase tracking-widest text-wms-muted mb-3 mt-6">
           Stock Movements
         </p>
         <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
@@ -143,9 +142,9 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
-          <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
+          <p className="text-xs uppercase tracking-widest text-wms-muted mb-3 mt-6">
             Inspection Quality
           </p>
           <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
@@ -153,7 +152,7 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
           </div>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
+          <p className="text-xs uppercase tracking-widest text-wms-muted mb-3 mt-6">
             Defect Analysis
           </p>
           <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
@@ -162,8 +161,8 @@ export function DashboardPage({ products, movements, inspections, defects, ncrs 
         </div>
       </div>
 
-      <div className="mt-6">
-        <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
+      <div>
+        <p className="text-xs uppercase tracking-widest text-wms-muted mb-3 mt-6">
           NCR & CAPA Status
         </p>
         <div className="bg-wms-surface border border-wms-border rounded-xl p-5">

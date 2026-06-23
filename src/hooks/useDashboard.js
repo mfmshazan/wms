@@ -84,6 +84,9 @@ export function useDashboard(products = [], movements = [], inspections = [], de
 
   // 2. Movements Metrics
   const movementsMetrics = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     let inboundToday = 0;
     let outboundToday = 0;
     const topMovedMap = new Map();
