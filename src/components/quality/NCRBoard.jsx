@@ -2,11 +2,11 @@ import { useState, useMemo } from "react";
 import { NCR_STATUSES, NCR_TYPES } from "../../data/constants";
 
 function priorityBadgeClass(priority) {
-  if (priority === "Critical") return "bg-red-900/40 text-wms-red";
-  if (priority === "High") return "bg-orange-900/40 text-wms-orange";
-  if (priority === "Medium") return "bg-yellow-900/40 text-yellow-400";
-  if (priority === "Low") return "bg-blue-900/40 text-wms-blue";
-  return "bg-wms-surface text-wms-text";
+  if (priority === "Critical") return "bg-red-100 text-red-700";
+  if (priority === "High")     return "bg-orange-100 text-orange-700";
+  if (priority === "Medium")   return "bg-amber-100 text-amber-700";
+  if (priority === "Low")      return "bg-blue-100 text-blue-700";
+  return "bg-slate-100 text-slate-600";
 }
 
 function getNextStatus(currentStatus) {
@@ -51,7 +51,7 @@ export function NCRBoard({ ncrs, onView, onDelete, onStatusChange }) {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="bg-wms-bg border border-wms-border rounded text-xs px-2 py-1 text-wms-text focus:outline-none"
+            className="bg-white border border-wms-border rounded text-xs px-2 py-1 text-wms-text focus:outline-none focus:ring-2 focus:ring-wms-purple/20 focus:border-wms-purple"
           >
             <option value="All">All</option>
             <option value="Critical">Critical</option>
@@ -67,7 +67,7 @@ export function NCRBoard({ ncrs, onView, onDelete, onStatusChange }) {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-wms-bg border border-wms-border rounded text-xs px-2 py-1 text-wms-text focus:outline-none"
+            className="bg-white border border-wms-border rounded text-xs px-2 py-1 text-wms-text focus:outline-none focus:ring-2 focus:ring-wms-purple/20 focus:border-wms-purple"
           >
             <option value="All">All Types</option>
             {NCR_TYPES.map(t => (
@@ -83,7 +83,7 @@ export function NCRBoard({ ncrs, onView, onDelete, onStatusChange }) {
             placeholder="Search assignee..."
             value={assigneeSearch}
             onChange={(e) => setAssigneeSearch(e.target.value)}
-            className="bg-wms-bg border border-wms-border rounded text-xs px-3 py-1.5 text-wms-text focus:outline-none focus:border-green-700 w-48"
+            className="bg-white border border-wms-border rounded text-xs px-3 py-1.5 text-wms-text focus:outline-none focus:ring-2 focus:ring-wms-purple/20 focus:border-wms-purple w-48"
           />
         </div>
       </div>

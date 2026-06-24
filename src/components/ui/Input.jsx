@@ -1,6 +1,3 @@
-/**
- * Input — controlled text/number input with optional label.
- */
 export function Input({
   value,
   onChange,
@@ -11,12 +8,9 @@ export function Input({
   id,
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       {label && (
-        <label
-          htmlFor={id}
-          className="text-xs uppercase tracking-widest text-wms-muted"
-        >
+        <label htmlFor={id} className="text-xs font-medium uppercase tracking-widest text-wms-muted">
           {label}
         </label>
       )}
@@ -27,7 +21,7 @@ export function Input({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className="bg-wms-bg border border-wms-border rounded-lg px-3 py-2 text-sm text-wms-text w-full placeholder:text-wms-muted/60 focus:outline-none focus:ring-1 focus:ring-green-700 focus:border-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="bg-white border border-wms-border rounded-lg px-3 py-2 text-sm text-wms-text w-full placeholder:text-wms-muted/60 focus:outline-none focus:ring-2 focus:ring-wms-purple/20 focus:border-wms-purple disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       />
     </div>
   );

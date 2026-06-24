@@ -5,16 +5,16 @@ module.exports = {
     extend: {
       colors: {
         wms: {
-          bg:      "#0D0F12",
-          surface: "#14171C",
-          border:  "#1C1F24",
-          green:   "#6EE8A2",
-          orange:  "#F0A080",
-          red:     "#F08080",
-          blue:    "#80C8F0",
-          purple:  "#B8A8F0",
-          text:    "#E8E6E0",
-          muted:   "#555555",
+          bg:      "#F1F5F9",
+          surface: "#FFFFFF",
+          border:  "#E2E8F0",
+          green:   "#10B981",
+          orange:  "#F59E0B",
+          red:     "#EF4444",
+          blue:    "#3B82F6",
+          purple:  "#6366F1",
+          text:    "#1E293B",
+          muted:   "#94A3B8",
         },
       },
       fontFamily: {

@@ -1,25 +1,23 @@
 const colorMap = {
-  green: { bg: "bg-green-900/40", text: "text-wms-green" },
-  orange: { bg: "bg-orange-900/40", text: "text-wms-orange" },
-  red: { bg: "bg-red-900/40", text: "text-wms-red" },
-  blue: { bg: "bg-blue-900/40", text: "text-wms-blue" },
-  purple: { bg: "bg-purple-900/40", text: "text-wms-purple" },
+  green:  { bg: "bg-emerald-50",  text: "text-emerald-600" },
+  orange: { bg: "bg-amber-50",    text: "text-amber-600" },
+  red:    { bg: "bg-red-50",      text: "text-red-500" },
+  blue:   { bg: "bg-blue-50",     text: "text-blue-600" },
+  purple: { bg: "bg-indigo-50",   text: "text-indigo-600" },
 };
 
 export function KPICard({ title, value, subtitle, color, icon, trend }) {
   const styles = colorMap[color] || colorMap.blue;
 
   return (
-    <div className="bg-wms-surface border border-wms-border rounded-xl p-4 flex flex-col gap-1">
-      <div
-        className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg mb-1 ${styles.bg}`}
-      >
+    <div className="bg-wms-surface border border-wms-border rounded-xl p-5 flex flex-col gap-1 shadow-sm hover:shadow-md transition-shadow">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-2 ${styles.bg}`}>
         {icon}
       </div>
-      <div className={`font-mono text-2xl font-bold ${styles.text}`}>
+      <div className={`text-2xl font-bold ${styles.text}`}>
         {value}
       </div>
-      <div className="text-xs text-wms-muted uppercase tracking-widest mt-1">
+      <div className="text-xs text-wms-muted uppercase tracking-widest font-medium mt-0.5">
         {title}
       </div>
       {subtitle && (
@@ -28,12 +26,12 @@ export function KPICard({ title, value, subtitle, color, icon, trend }) {
         </div>
       )}
       {trend && (
-        <div className="text-xs font-mono mt-1.5 flex items-center gap-1">
+        <div className="text-xs font-medium mt-2 flex items-center gap-1">
           {trend.direction === "up" && (
-            <span className="text-wms-green">↑ {trend.label}</span>
+            <span className="text-emerald-600">↑ {trend.label}</span>
           )}
           {trend.direction === "down" && (
-            <span className="text-wms-red">↓ {trend.label}</span>
+            <span className="text-red-500">↓ {trend.label}</span>
           )}
           {trend.direction === "neutral" && (
             <span className="text-wms-muted">→ {trend.label}</span>

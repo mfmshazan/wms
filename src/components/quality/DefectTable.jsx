@@ -26,10 +26,10 @@ function severityVariant(severity) {
 }
 
 function severityCustomClass(severity) {
-  if (severity === "Critical") return "bg-red-900/40 text-wms-red border border-red-800";
-  if (severity === "Major") return "bg-orange-900/40 text-wms-orange border border-orange-800";
-  if (severity === "Minor") return "bg-yellow-900/40 text-yellow-400 border border-yellow-600";
-  return "bg-wms-surface border-wms-border text-wms-text";
+  if (severity === "Critical") return "bg-red-100 text-red-700 border border-red-200";
+  if (severity === "Major")    return "bg-orange-100 text-orange-700 border border-orange-200";
+  if (severity === "Minor")    return "bg-amber-100 text-amber-700 border border-amber-200";
+  return "bg-slate-100 text-slate-500";
 }
 
 function statusVariant(status) {
@@ -89,16 +89,16 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR 
               key={s}
               id={`def-sev-filter-${s.toLowerCase()}`}
               onClick={() => setSeverityFilter(s)}
-              className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors border ${
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
                 severityFilter === s
                   ? s === "Critical"
-                    ? "bg-red-900/40 border-red-800 text-wms-red"
+                    ? "bg-red-100 border-red-200 text-red-700"
                     : s === "Major"
-                    ? "bg-orange-900/40 border-orange-800 text-wms-orange"
+                    ? "bg-orange-100 border-orange-200 text-orange-700"
                     : s === "Minor"
-                    ? "bg-yellow-900/40 border-yellow-600 text-yellow-400"
-                    : "bg-blue-900/40 border-blue-700 text-wms-blue"
-                  : "bg-transparent border-wms-border text-wms-muted hover:bg-white/5"
+                    ? "bg-amber-100 border-amber-200 text-amber-700"
+                    : "bg-indigo-100 border-indigo-200 text-indigo-700"
+                  : "bg-transparent border-wms-border text-wms-muted hover:bg-slate-100 hover:text-wms-text"
               }`}
             >
               {s}
@@ -113,10 +113,10 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR 
               key={st}
               id={`def-status-filter-${st.toLowerCase().replace(/\\s/g, "-")}`}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors border ${
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
                 statusFilter === st
-                  ? "bg-wms-border/40 border-wms-border text-wms-text"
-                  : "bg-transparent border-wms-border text-wms-muted hover:bg-white/5"
+                  ? "bg-slate-100 border-slate-300 text-slate-700"
+                  : "bg-transparent border-wms-border text-wms-muted hover:bg-slate-100 hover:text-wms-text"
               }`}
             >
               {st}
@@ -177,7 +177,7 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR 
                 {filtered.map((def, idx) => (
                   <tr
                     key={def.id}
-                    className={`border-b border-wms-border/50 transition-colors hover:bg-white/[0.02] ${
+                    className={`border-b border-wms-border/50 transition-colors hover:bg-slate-50 ${
                       idx === filtered.length - 1 ? "border-b-0" : ""
                     }`}
                   >
@@ -241,7 +241,7 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR 
                         {def.status !== "Closed" && def.status !== "Resolved" && (
                           <button
                             onClick={() => onConvertToNCR(def)}
-                            className="px-2 py-1 rounded text-xs text-wms-purple hover:bg-purple-900/20 transition-colors whitespace-nowrap"
+                            className="px-2 py-1 rounded text-xs text-wms-purple hover:bg-indigo-50 transition-colors whitespace-nowrap font-medium"
                           >
                             Convert to NCR
                           </button>

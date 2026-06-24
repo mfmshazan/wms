@@ -70,12 +70,12 @@ export function NCRStatsBar({ ncrs }) {
   }, [ncrs]);
 
   return (
-    <div className="flex overflow-x-auto gap-3 mb-4 pb-2 snap-x">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
       {stats.map((stat) => (
         <div
           key={stat.id}
           id={stat.id}
-          className="bg-wms-surface border border-wms-border rounded-xl px-5 py-4 flex-1 min-w-[160px] snap-start shrink-0"
+          className="bg-wms-surface border border-wms-border rounded-xl px-5 py-4"
         >
           <p className={`font-mono text-xl font-bold ${stat.color}`}>
             {stat.value}

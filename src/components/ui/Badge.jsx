@@ -1,15 +1,10 @@
-/**
- * Badge — variant: "low" | "active" | "inactive" | "category"
- */
 export function Badge({ children, variant = "category" }) {
   const variants = {
-    low: "bg-orange-900/40 border border-orange-800/60 text-wms-orange text-[10px] px-1.5 py-0.5 rounded",
-    active:
-      "bg-green-900/30 border border-green-800/40 text-wms-green text-xs px-2 py-0.5 rounded",
-    inactive:
-      "bg-wms-border/40 text-wms-muted text-xs px-2 py-0.5 rounded",
-    category:
-      "bg-blue-900/30 border border-blue-800/40 text-wms-blue text-xs px-2 py-0.5 rounded",
+    low:      "bg-red-100 border border-red-200 text-red-700 text-[10px] px-1.5 py-0.5 rounded",
+    warning:  "bg-orange-100 border border-orange-200 text-orange-700 text-xs px-2 py-0.5 rounded",
+    active:   "bg-emerald-100 border border-emerald-200 text-emerald-700 text-xs px-2 py-0.5 rounded",
+    inactive: "bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded border border-slate-200",
+    category: "bg-blue-100 border border-blue-200 text-blue-700 text-xs px-2 py-0.5 rounded",
   };
 
   return (

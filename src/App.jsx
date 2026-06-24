@@ -5,12 +5,17 @@ import { useInspections } from "./hooks/useInspections";
 import { useDefects } from "./hooks/useDefects";
 import { useNCRs } from "./hooks/useNCRs";
 import { useToast } from "./hooks/useToast";
+import { useDashboard } from "./hooks/useDashboard";
 
 import { Header } from "./components/layout/Header";
+import { Sidebar } from "./components/layout/Sidebar";
 import { Toast } from "./components/ui/Toast";
 
 // Dashboard view
 import { DashboardPage } from "./components/dashboard/DashboardPage";
+
+// AI Assistant
+import { AIAssistantPanel } from "./components/ai/AIAssistantPanel";
 
 // Products view
 import { StatsBar } from "./components/products/StatsBar";
@@ -70,9 +75,12 @@ export default function App() {
   } = useNCRs();
   const { toast, showToast } = useToast();
 
+  const metrics = useDashboard(products, movements, inspections, defects, ncrs);
+
   // ── View state ─────────────────────────────────────────────────────────────
   // "dashboard" | "products" | "movements" | "inspections" | "defects" | "ncrs"
   const [activeView, setActiveView] = useState("dashboard");
+  const [isAIOpen, setIsAIOpen] = useState(false);
 
   // ── Modal state ────────────────────────────────────────────────────────────
   // null | "add" | "edit" | "delete" | "receive" | "dispatch" | "inspection" | "defect" | "defectDetail" | "defectStatus" | "ncr" | "ncrDetail" | "capa" | "capaStatus"
@@ -294,157 +302,105 @@ export default function App() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-wms-bg">
-      {/* ── Header ── */}
-      <Header
+    <div className="flex min-h-screen bg-wms-bg overflow-x-hidden">
+      {/* ── Sidebar ── */}
+      <Sidebar
         activeView={activeView}
         onViewChange={setActiveView}
-        onAddProduct={handleAddClick}
-        onReceive={() => setModal("receive")}
-        onDispatch={() => setModal("dispatch")}
-        onNewInspection={() => setModal("inspection")}
-        onLogDefect={() => {
-          setDefectPrefill(null);
-          setModal("defect");
-        }}
-        onRaiseNCR={() => {
-          setNcrPrefill(null);
-          setModal("ncr");
-        }}
+        onOpenAI={() => setIsAIOpen(true)}
       />
 
-      {/* ── Main content ── */}
-      <main className="max-w-screen-xl mx-auto px-6 py-6">
-        {activeView === "dashboard" && (
-          <DashboardPage
-            products={products}
-            movements={movements}
-            inspections={inspections}
-            defects={defects}
-            ncrs={ncrs}
-          />
-        )}
+      {/* ── Main area ── */}
+      <div className="flex-1 flex flex-col ml-60 min-h-screen min-w-0 overflow-x-hidden">
+        {/* ── Top bar ── */}
+        <Header
+          activeView={activeView}
+          onAddProduct={handleAddClick}
+          onReceive={() => setModal("receive")}
+          onDispatch={() => setModal("dispatch")}
+          onNewInspection={() => setModal("inspection")}
+          onLogDefect={() => {
+            setDefectPrefill(null);
+            setModal("defect");
+          }}
+          onRaiseNCR={() => {
+            setNcrPrefill(null);
+            setModal("ncr");
+          }}
+        />
 
-        {activeView === "products" && (
-          <>
-            {/* Page title */}
-            <div className="mb-6">
-              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
-                Product Inventory
-              </h2>
-              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
-                Manage and track all warehouse SKUs
-              </p>
-            </div>
+        {/* ── Page content ── */}
+        <main className="flex-1 px-6 py-6">
+          {activeView === "dashboard" && (
+            <DashboardPage metrics={metrics} />
+          )}
 
-            <StatsBar products={products} filteredCount={filteredProducts.length} />
+          {activeView === "products" && (
+            <>
+              <StatsBar products={products} filteredCount={filteredProducts.length} />
+              <SearchBar
+                search={search}
+                onSearch={setSearch}
+                filterCat={filterCat}
+                onFilterCat={setFilterCat}
+              />
+              <ProductTable
+                products={filteredProducts}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+              />
+            </>
+          )}
 
-            <SearchBar
-              search={search}
-              onSearch={setSearch}
-              filterCat={filterCat}
-              onFilterCat={setFilterCat}
-            />
+          {activeView === "movements" && (
+            <>
+              <MovementStatsBar movements={movements} products={products} />
+              <MovementTable
+                movements={movements}
+                products={products}
+                onDelete={handleDeleteMovement}
+              />
+            </>
+          )}
 
-            <ProductTable
-              products={filteredProducts}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-            />
-          </>
-        )}
+          {activeView === "inspections" && (
+            <>
+              <InspectionStatsBar inspections={inspections} />
+              <InspectionTable
+                inspections={inspections}
+                onView={handleViewInspection}
+                onDelete={handleDeleteInspection}
+                onLogDefect={handleConvertInspectionToDefect}
+              />
+            </>
+          )}
 
-        {activeView === "movements" && (
-          <>
-            {/* Page title */}
-            <div className="mb-6">
-              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
-                Stock Movements
-              </h2>
-              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
-                Inbound &amp; outbound movement log
-              </p>
-            </div>
+          {activeView === "defects" && (
+            <>
+              <DefectStatsBar defects={defects} />
+              <DefectTable
+                defects={defects}
+                onView={handleViewDefect}
+                onEdit={handleEditDefect}
+                onDelete={handleDeleteDefect}
+                onConvertToNCR={handleConvertToNCR}
+              />
+            </>
+          )}
 
-            <MovementStatsBar movements={movements} products={products} />
-
-            <MovementTable
-              movements={movements}
-              products={products}
-              onDelete={handleDeleteMovement}
-            />
-          </>
-        )}
-
-        {activeView === "inspections" && (
-          <>
-            {/* Page title */}
-            <div className="mb-6">
-              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
-                Quality Inspections
-              </h2>
-              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
-                Inspection checklists &amp; audit trail
-              </p>
-            </div>
-
-            <InspectionStatsBar inspections={inspections} />
-
-            <InspectionTable
-              inspections={inspections}
-              onView={handleViewInspection}
-              onDelete={handleDeleteInspection}
-              onLogDefect={handleConvertInspectionToDefect}
-            />
-          </>
-        )}
-
-        {activeView === "defects" && (
-          <>
-            {/* Page title */}
-            <div className="mb-6">
-              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
-                Defect Log
-              </h2>
-              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
-                Track and resolve product issues
-              </p>
-            </div>
-
-            <DefectStatsBar defects={defects} />
-
-            <DefectTable
-              defects={defects}
-              onView={handleViewDefect}
-              onEdit={handleEditDefect}
-              onDelete={handleDeleteDefect}
-              onConvertToNCR={handleConvertToNCR}
-            />
-          </>
-        )}
-
-        {activeView === "ncrs" && (
-          <>
-            <div className="mb-6">
-              <h2 className="font-mono font-bold text-wms-text text-lg tracking-wide">
-                Non-Conformance Reports
-              </h2>
-              <p className="text-xs text-wms-muted mt-0.5 uppercase tracking-widest">
-                NCR workflow and CAPA management
-              </p>
-            </div>
-
-            <NCRStatsBar ncrs={ncrs} />
-
-            <NCRBoard
-              ncrs={ncrs}
-              onView={handleViewNCR}
-              onDelete={handleDeleteNCR}
-              onStatusChange={handleNCRStatusChange}
-            />
-          </>
-        )}
-      </main>
+          {activeView === "ncrs" && (
+            <>
+              <NCRStatsBar ncrs={ncrs} />
+              <NCRBoard
+                ncrs={ncrs}
+                onView={handleViewNCR}
+                onDelete={handleDeleteNCR}
+                onStatusChange={handleNCRStatusChange}
+              />
+            </>
+          )}
+        </main>
+      </div>
 
       {/* ── Product Modals ── */}
       {(modal === "add" || modal === "edit") && (
@@ -575,6 +531,18 @@ export default function App() {
 
       {/* ── Toast ── */}
       <Toast toast={toast} />
+
+      {/* ── AI Assistant ── */}
+      <AIAssistantPanel
+        isOpen={isAIOpen}
+        onClose={() => setIsAIOpen(false)}
+        products={products}
+        movements={movements}
+        inspections={inspections}
+        defects={defects}
+        ncrs={ncrs}
+        metrics={metrics}
+      />
     </div>
   );
 }
