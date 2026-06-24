@@ -18,13 +18,6 @@ function formatTimestamp(iso) {
   });
 }
 
-function severityVariant(severity) {
-  if (severity === "Critical") return "low"; // red
-  if (severity === "Major") return "warning"; // orange
-  if (severity === "Minor") return "active"; // yellow-ish? we'll use active for minor or custom
-  return "inactive";
-}
-
 function severityCustomClass(severity) {
   if (severity === "Critical") return "bg-red-100 text-red-700 border border-red-200";
   if (severity === "Major")    return "bg-orange-100 text-orange-700 border border-orange-200";

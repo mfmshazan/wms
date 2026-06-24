@@ -56,8 +56,6 @@ export function CAPAStatusModal({ capa, ncrId, onSave, onClose }) {
     onSave(ncrId, capa.capaId, updates);
   }
 
-  const todayStr = new Date().toISOString().split("T")[0];
-
   return (
     <Modal title={`Update CAPA: ${capa.capaId}`} onClose={onClose}>
       <div className="flex flex-col gap-4">

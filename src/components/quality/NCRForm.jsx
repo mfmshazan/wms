@@ -3,7 +3,7 @@ import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Select } from "../ui/Select";
-import { NCR_TYPES, NCR_PRIORITIES } from "../../data/constants";
+import { NCR_TYPES } from "../../data/constants";
 
 /**
  * NCRForm — modal form to raise a new NCR manually or from a defect.
