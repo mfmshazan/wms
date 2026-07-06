@@ -1,74 +1,29 @@
-import { useState } from "react";
-import { INITIAL_DEFECTS } from "../data/constants";
-import { generateDefectId } from "../utils/defectIdGenerator";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { defectsApi } from "../lib/api";
 
-/**
- * Central hook for all defect CRUD operations.
- */
+/** Central hook for defect records, backed by the REST API. */
 export function useDefects() {
-  const [defects, setDefects] = useState(INITIAL_DEFECTS);
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["defects"] });
 
-  /**
-   * Add a new defect record.
-   * Generates defectId and timestamp automatically.
-   * @param {object} data - Partial defect
-   */
-  function addDefect(data) {
-    const newDefect = {
-      ...data,
-      id: Date.now(),
-      defectId: generateDefectId(),
-      timestamp: new Date().toISOString(),
-      resolvedAt: data.status === "Resolved" || data.status === "Closed" ? new Date().toISOString() : null,
-    };
-    setDefects((prev) => [newDefect, ...prev]);
-  }
+  const { data: defects = [], isLoading, error } = useQuery({
+    queryKey: ["defects"],
+    queryFn: defectsApi.list,
+  });
 
-  /**
-   * Replace an existing defect record by id.
-   * Typically used for status and disposition updates.
-   * @param {number} id
-   * @param {object} data
-   */
-  function updateDefect(id, data) {
-    setDefects((prev) =>
-      prev.map((def) => (def.id === id ? { ...def, ...data } : def))
-    );
-  }
-
-  /** Remove a defect record by id. */
-  function deleteDefect(id) {
-    setDefects((prev) => prev.filter((def) => def.id !== id));
-  }
-
-  /** Return a single defect by id, or undefined. */
-  function getDefectById(id) {
-    return defects.find((def) => def.id === id);
-  }
-
-  /** Return all defects for a given SKU. */
-  function getDefectsByProduct(sku) {
-    return defects.filter((def) => def.sku === sku);
-  }
-
-  /** Return all defects for a given severity. */
-  function getDefectsBySeverity(severity) {
-    return defects.filter((def) => def.severity === severity);
-  }
-
-  /** Return all open defects. */
-  function getOpenDefects() {
-    return defects.filter((def) => def.status === "Open");
-  }
+  const addMut = useMutation({ mutationFn: defectsApi.create, onSuccess: invalidate });
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }) => defectsApi.update(id, data),
+    onSuccess: invalidate,
+  });
+  const deleteMut = useMutation({ mutationFn: defectsApi.remove, onSuccess: invalidate });
 
   return {
     defects,
-    addDefect,
-    updateDefect,
-    deleteDefect,
-    getDefectById,
-    getDefectsByProduct,
-    getDefectsBySeverity,
-    getOpenDefects,
+    isLoading,
+    error,
+    addDefect: (data) => addMut.mutateAsync(data),
+    updateDefect: (id, data) => updateMut.mutateAsync({ id, data }),
+    deleteDefect: (id) => deleteMut.mutateAsync(id),
   };
 }

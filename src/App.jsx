@@ -57,8 +57,6 @@ export default function App() {
     addProduct,
     updateProduct,
     deleteProduct,
-    incrementStock,
-    decrementStock,
   } = useProducts();
 
   const { movements, addMovement, deleteMovement } = useMovements();
@@ -126,21 +124,29 @@ export default function App() {
     setModal("delete");
   }
 
-  function handleSave(formData) {
-    if (modal === "add") {
-      addProduct(formData);
-      showToast("Product added successfully", "success");
-    } else if (modal === "edit") {
-      updateProduct(selectedProduct.id, formData);
-      showToast("Product updated", "success");
+  async function handleSave(formData) {
+    try {
+      if (modal === "add") {
+        await addProduct(formData);
+        showToast("Product added successfully", "success");
+      } else if (modal === "edit") {
+        await updateProduct(selectedProduct.id, formData);
+        showToast("Product updated", "success");
+      }
+      setModal(null);
+      setSelectedProduct(null);
+    } catch (err) {
+      showToast(err.message || "Failed to save product", "danger");
     }
-    setModal(null);
-    setSelectedProduct(null);
   }
 
-  function handleConfirmDelete() {
-    deleteProduct(selectedProduct.id);
-    showToast(`"${selectedProduct.name}" deleted`, "error");
+  async function handleConfirmDelete() {
+    try {
+      await deleteProduct(selectedProduct.id);
+      showToast(`"${selectedProduct.name}" deleted`, "error");
+    } catch (err) {
+      showToast(err.message || "Failed to delete product", "danger");
+    }
     setModal(null);
     setSelectedProduct(null);
   }
@@ -151,39 +157,55 @@ export default function App() {
   }
 
   // ── Movement handlers ──────────────────────────────────────────────────────
-  function handleReceive(movementData) {
-    addMovement(movementData);
-    incrementStock(movementData.sku, movementData.qty);
-    showToast("Stock received successfully", "success");
-    setModal(null);
-  }
-
-  function handleDispatch(movementData) {
-    const ok = decrementStock(movementData.sku, movementData.qty);
-    if (!ok) {
-      showToast("Insufficient stock", "danger");
-      return;
+  async function handleReceive(movementData) {
+    try {
+      // Server records the movement and increments stock in one transaction.
+      await addMovement(movementData);
+      showToast("Stock received successfully", "success");
+      setModal(null);
+    } catch (err) {
+      showToast(err.message || "Failed to receive stock", "danger");
     }
-    addMovement(movementData);
-    showToast("Dispatch recorded successfully", "success");
-    setModal(null);
   }
 
-  function handleDeleteMovement(movement) {
-    deleteMovement(movement.id);
-    showToast("Movement deleted", "danger");
+  async function handleDispatch(movementData) {
+    try {
+      // Server checks stock and decrements atomically; rejects if insufficient.
+      await addMovement(movementData);
+      showToast("Dispatch recorded successfully", "success");
+      setModal(null);
+    } catch (err) {
+      showToast(err.message || "Failed to record dispatch", "danger");
+    }
+  }
+
+  async function handleDeleteMovement(movement) {
+    try {
+      await deleteMovement(movement.id);
+      showToast("Movement deleted", "danger");
+    } catch (err) {
+      showToast(err.message || "Failed to delete movement", "danger");
+    }
   }
 
   // ── Inspection handlers ────────────────────────────────────────────────────
-  function handleAddInspection(inspectionData) {
-    addInspection(inspectionData);
-    showToast("Inspection recorded successfully", "success");
-    setModal(null);
+  async function handleAddInspection(inspectionData) {
+    try {
+      await addInspection(inspectionData);
+      showToast("Inspection recorded successfully", "success");
+      setModal(null);
+    } catch (err) {
+      showToast(err.message || "Failed to record inspection", "danger");
+    }
   }
 
-  function handleDeleteInspection(inspection) {
-    deleteInspection(inspection.id);
-    showToast("Inspection deleted", "danger");
+  async function handleDeleteInspection(inspection) {
+    try {
+      await deleteInspection(inspection.id);
+      showToast("Inspection deleted", "danger");
+    } catch (err) {
+      showToast(err.message || "Failed to delete inspection", "danger");
+    }
   }
 
   // onView is handled locally inside InspectionTable (read-only detail modal)
@@ -192,23 +214,35 @@ export default function App() {
   }
 
   // ── Defect handlers ────────────────────────────────────────────────────────
-  function handleAddDefect(defectData) {
-    addDefect(defectData);
-    showToast("Defect logged successfully", "success");
-    setModal(null);
-    setDefectPrefill(null);
+  async function handleAddDefect(defectData) {
+    try {
+      await addDefect(defectData);
+      showToast("Defect logged successfully", "success");
+      setModal(null);
+      setDefectPrefill(null);
+    } catch (err) {
+      showToast(err.message || "Failed to log defect", "danger");
+    }
   }
 
-  function handleUpdateDefectStatus(id, updates) {
-    updateDefect(id, updates);
-    showToast("Defect status updated", "success");
-    setModal(null);
-    setSelectedDefect(null);
+  async function handleUpdateDefectStatus(id, updates) {
+    try {
+      await updateDefect(id, updates);
+      showToast("Defect status updated", "success");
+      setModal(null);
+      setSelectedDefect(null);
+    } catch (err) {
+      showToast(err.message || "Failed to update defect", "danger");
+    }
   }
 
-  function handleDeleteDefect(defect) {
-    deleteDefect(defect.id);
-    showToast("Defect deleted", "danger");
+  async function handleDeleteDefect(defect) {
+    try {
+      await deleteDefect(defect.id);
+      showToast("Defect deleted", "danger");
+    } catch (err) {
+      showToast(err.message || "Failed to delete defect", "danger");
+    }
   }
 
   function handleConvertToNCR(defect) {
@@ -241,24 +275,34 @@ export default function App() {
   }
 
   // ── NCR & CAPA handlers ────────────────────────────────────────────────────
-  function handleAddNCR(ncrData) {
-    addNCR(ncrData);
-    showToast("NCR raised successfully", "success");
-    setModal(null);
-    setNcrPrefill(null);
+  async function handleAddNCR(ncrData) {
+    try {
+      await addNCR(ncrData);
+      showToast("NCR raised successfully", "success");
+      setModal(null);
+      setNcrPrefill(null);
+    } catch (err) {
+      showToast(err.message || "Failed to raise NCR", "danger");
+    }
   }
 
-  function handleNCRStatusChange(ncr, newStatus) {
-    updateNCR(ncr.id, {
-      status: newStatus,
-      closedAt: newStatus === "Closed" ? new Date().toISOString() : ncr.closedAt,
-    });
-    showToast(`NCR moved to ${newStatus}`, "success");
+  async function handleNCRStatusChange(ncr, newStatus) {
+    try {
+      // Server manages closedAt based on the status transition.
+      await updateNCR(ncr.id, { status: newStatus });
+      showToast(`NCR moved to ${newStatus}`, "success");
+    } catch (err) {
+      showToast(err.message || "Failed to update NCR", "danger");
+    }
   }
 
-  function handleDeleteNCR(ncr) {
-    deleteNCR(ncr.id);
-    showToast("NCR deleted", "danger");
+  async function handleDeleteNCR(ncr) {
+    try {
+      await deleteNCR(ncr.id);
+      showToast("NCR deleted", "danger");
+    } catch (err) {
+      showToast(err.message || "Failed to delete NCR", "danger");
+    }
   }
 
   function handleViewNCR(ncr) {
@@ -266,21 +310,33 @@ export default function App() {
     setModal("ncrDetail");
   }
 
-  function handleAddCAPA(ncrId, capaData) {
-    addCAPA(ncrId, capaData);
-    showToast("CAPA action added", "success");
-    setModal("ncrDetail");
+  async function handleAddCAPA(ncrId, capaData) {
+    try {
+      await addCAPA(ncrId, capaData);
+      showToast("CAPA action added", "success");
+      setModal("ncrDetail");
+    } catch (err) {
+      showToast(err.message || "Failed to add CAPA", "danger");
+    }
   }
 
-  function handleUpdateCAPA(ncrId, capaId, updates) {
-    updateCAPA(ncrId, capaId, updates);
-    showToast("CAPA updated", "success");
-    setModal("ncrDetail");
+  async function handleUpdateCAPA(ncrId, capaId, updates) {
+    try {
+      await updateCAPA(ncrId, capaId, updates);
+      showToast("CAPA updated", "success");
+      setModal("ncrDetail");
+    } catch (err) {
+      showToast(err.message || "Failed to update CAPA", "danger");
+    }
   }
 
-  function handleDeleteCAPA(ncrId, capaId) {
-    deleteCAPA(ncrId, capaId);
-    showToast("CAPA removed", "danger");
+  async function handleDeleteCAPA(ncrId, capaId) {
+    try {
+      await deleteCAPA(ncrId, capaId);
+      showToast("CAPA removed", "danger");
+    } catch (err) {
+      showToast(err.message || "Failed to remove CAPA", "danger");
+    }
   }
 
   function handleOpenCAPAForm(ncrId) {
@@ -496,7 +552,7 @@ export default function App() {
 
       {modal === "ncrDetail" && (
         <NCRDetailModal
-          ncr={selectedNCR}
+          ncr={ncrs.find((n) => n.id === selectedNCR?.id) || selectedNCR}
           defects={defects}
           onClose={() => {
             setModal(null);

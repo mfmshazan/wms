@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { INITIAL_INSPECTIONS } from "../data/constants";
-import { generateInspectionId } from "../utils/inspectionIdGenerator";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { inspectionsApi } from "../lib/api";
 
 /**
- * Compute overall result from criteria array.
- * - "Fail"    if ANY criterion is "Fail"
- * - "Pending" if ANY criterion is "Pending" and none are "Fail"
- * - "Pass"    only if ALL criteria are "Pass"
+ * Compute overall result from a criteria array. Kept here (and exported)
+ * because InspectionForm uses it for a live preview. The server computes the
+ * authoritative value on save; this mirrors that logic for the UI.
  * @param {Array<{result: string}>} criteria
  * @returns {"Pass" | "Fail" | "Pending"}
  */
@@ -16,68 +14,29 @@ export function computeOverallResult(criteria) {
   return "Pass";
 }
 
-/**
- * Central hook for all inspection CRUD operations.
- * Inspection records are append-only — never edited, only viewed or deleted.
- */
+/** Central hook for inspections, backed by the REST API. */
 export function useInspections() {
-  const [inspections, setInspections] = useState(INITIAL_INSPECTIONS);
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["inspections"] });
 
-  /**
-   * Add a new inspection record.
-   * Generates inspectionId, timestamp, and computes overallResult automatically.
-   * @param {object} data - Partial inspection (all fields except id, inspectionId, timestamp, overallResult)
-   */
-  function addInspection(data) {
-    const overallResult = computeOverallResult(data.criteria);
-    const newInspection = {
-      ...data,
-      id: Date.now(),
-      inspectionId: generateInspectionId(),
-      overallResult,
-      timestamp: new Date().toISOString(),
-    };
-    setInspections((prev) => [newInspection, ...prev]);
-  }
+  const { data: inspections = [], isLoading, error } = useQuery({
+    queryKey: ["inspections"],
+    queryFn: inspectionsApi.list,
+  });
 
-  /**
-   * Replace an existing inspection record by id.
-   * Recomputes overallResult from the new criteria.
-   * @param {number} id
-   * @param {object} data
-   */
-  function updateInspection(id, data) {
-    const overallResult = computeOverallResult(data.criteria);
-    setInspections((prev) =>
-      prev.map((ins) =>
-        ins.id === id
-          ? { ...ins, ...data, id, overallResult }
-          : ins
-      )
-    );
-  }
-
-  /** Remove an inspection record by id. */
-  function deleteInspection(id) {
-    setInspections((prev) => prev.filter((ins) => ins.id !== id));
-  }
-
-  /** Return a single inspection by id, or undefined. */
-  function getInspectionById(id) {
-    return inspections.find((ins) => ins.id === id);
-  }
-
-  /** Return all inspections for a given SKU. */
-  function getInspectionsByProduct(sku) {
-    return inspections.filter((ins) => ins.sku === sku);
-  }
+  const addMut = useMutation({ mutationFn: inspectionsApi.create, onSuccess: invalidate });
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }) => inspectionsApi.update(id, data),
+    onSuccess: invalidate,
+  });
+  const deleteMut = useMutation({ mutationFn: inspectionsApi.remove, onSuccess: invalidate });
 
   return {
     inspections,
-    addInspection,
-    updateInspection,
-    deleteInspection,
-    getInspectionById,
-    getInspectionsByProduct,
+    isLoading,
+    error,
+    addInspection: (data) => addMut.mutateAsync(data),
+    updateInspection: (id, data) => updateMut.mutateAsync({ id, data }),
+    deleteInspection: (id) => deleteMut.mutateAsync(id),
   };
 }

@@ -81,52 +81,52 @@ router.delete(
 );
 
 // ── CAPAs (nested under an NCR) ──────────────────────────────────────────────
+// Addressed by business ids: :ncrId = "NCR-0001", :capaId = "CAPA-0001".
 
-// POST /api/ncrs/:id/capas
+// POST /api/ncrs/:ncrId/capas
 router.post(
-  "/:id/capas",
+  "/:ncrId/capas",
   validate(capaCreate),
   asyncHandler(async (req, res) => {
-    const ncrId = Number(req.params.id);
     const capaId = await nextCapaId();
     const capa = await prisma.cAPA.create({
       data: {
         ...req.body,
         capaId,
         completedAt: req.body.status === "Completed" ? new Date() : null,
-        ncr: { connect: { id: ncrId } },
+        ncr: { connect: { ncrId: req.params.ncrId } },
       },
     });
     res.status(201).json(capa);
   })
 );
 
-// PUT /api/ncrs/:id/capas/:capaId — completedAt stamped when Completed/Verified.
+// PUT /api/ncrs/:ncrId/capas/:capaId — completedAt stamped when Completed/Verified.
 router.put(
-  "/:id/capas/:capaId",
+  "/:ncrId/capas/:capaId",
   validate(capaUpdate),
   asyncHandler(async (req, res) => {
-    const capaId = Number(req.params.capaId);
+    const { capaId } = req.params;
     const data = { ...req.body };
 
     if (req.body.status !== undefined) {
-      const current = await prisma.cAPA.findUnique({ where: { id: capaId } });
+      const current = await prisma.cAPA.findUnique({ where: { capaId } });
       if (!current) return res.status(404).json({ error: "CAPA not found" });
       const done = req.body.status === "Completed" || req.body.status === "Verified";
       if (done && !current.completedAt) data.completedAt = new Date();
       else if (!done) data.completedAt = null;
     }
 
-    const capa = await prisma.cAPA.update({ where: { id: capaId }, data });
+    const capa = await prisma.cAPA.update({ where: { capaId }, data });
     res.json(capa);
   })
 );
 
-// DELETE /api/ncrs/:id/capas/:capaId
+// DELETE /api/ncrs/:ncrId/capas/:capaId
 router.delete(
-  "/:id/capas/:capaId",
+  "/:ncrId/capas/:capaId",
   asyncHandler(async (req, res) => {
-    await prisma.cAPA.delete({ where: { id: Number(req.params.capaId) } });
+    await prisma.cAPA.delete({ where: { capaId: req.params.capaId } });
     res.status(204).end();
   })
 );

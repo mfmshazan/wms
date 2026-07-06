@@ -1,106 +1,51 @@
-import { useState } from "react";
-import { INITIAL_NCRS } from "../data/constants";
-import { generateNCRId } from "../utils/ncrIdGenerator";
-import { generateCAPAId } from "../utils/capaIdGenerator";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ncrsApi } from "../lib/api";
 
+/**
+ * Central hook for NCRs and their nested CAPA actions, backed by the REST API.
+ * CAPAs are returned inside each NCR, so every CAPA write also invalidates the
+ * ncrs cache.
+ */
 export function useNCRs() {
-  const [ncrs, setNcrs] = useState(INITIAL_NCRS);
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["ncrs"] });
 
-  // ── NCR Operations ─────────────────────────────────────────────────────────
+  const { data: ncrs = [], isLoading, error } = useQuery({
+    queryKey: ["ncrs"],
+    queryFn: ncrsApi.list,
+  });
 
-  function addNCR(data) {
-    const newNCR = {
-      ...data,
-      id: Date.now(),
-      ncrId: generateNCRId(),
-      timestamp: new Date().toISOString(),
-      closedAt: null,
-      capas: [],
-    };
-    setNcrs((prev) => [newNCR, ...prev]);
-  }
+  // ── NCR mutations ──────────────────────────────────────────────────────────
+  const addMut = useMutation({ mutationFn: ncrsApi.create, onSuccess: invalidate });
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }) => ncrsApi.update(id, data),
+    onSuccess: invalidate,
+  });
+  const deleteMut = useMutation({ mutationFn: ncrsApi.remove, onSuccess: invalidate });
 
-  function updateNCR(id, data) {
-    setNcrs((prev) =>
-      prev.map((ncr) => (ncr.id === id ? { ...ncr, ...data } : ncr))
-    );
-  }
-
-  function deleteNCR(id) {
-    setNcrs((prev) => prev.filter((ncr) => ncr.id !== id));
-  }
-
-  function getNCRById(id) {
-    return ncrs.find((ncr) => ncr.id === id);
-  }
-
-  function getNCRsByDefect(defectId) {
-    return ncrs.filter((ncr) => ncr.defectId === defectId);
-  }
-
-  function getOpenNCRs() {
-    return ncrs.filter((ncr) => ncr.status !== "Closed");
-  }
-
-  // ── CAPA Operations ────────────────────────────────────────────────────────
-
-  function addCAPA(ncrId, capaData) {
-    setNcrs((prev) =>
-      prev.map((ncr) => {
-        if (ncr.ncrId === ncrId) {
-          const newCAPA = {
-            ...capaData,
-            id: Date.now(),
-            capaId: generateCAPAId(),
-            completedAt: null,
-            verificationNotes: "",
-            effectiveness: "Pending",
-          };
-          return { ...ncr, capas: [...ncr.capas, newCAPA] };
-        }
-        return ncr;
-      })
-    );
-  }
-
-  function updateCAPA(ncrId, capaId, data) {
-    setNcrs((prev) =>
-      prev.map((ncr) => {
-        if (ncr.ncrId === ncrId) {
-          const updatedCapas = ncr.capas.map((capa) =>
-            capa.capaId === capaId ? { ...capa, ...data } : capa
-          );
-          return { ...ncr, capas: updatedCapas };
-        }
-        return ncr;
-      })
-    );
-  }
-
-  function deleteCAPA(ncrId, capaId) {
-    setNcrs((prev) =>
-      prev.map((ncr) => {
-        if (ncr.ncrId === ncrId) {
-          const filteredCapas = ncr.capas.filter(
-            (capa) => capa.capaId !== capaId
-          );
-          return { ...ncr, capas: filteredCapas };
-        }
-        return ncr;
-      })
-    );
-  }
+  // ── CAPA mutations (addressed by business ids) ─────────────────────────────
+  const addCapaMut = useMutation({
+    mutationFn: ({ ncrId, data }) => ncrsApi.addCapa(ncrId, data),
+    onSuccess: invalidate,
+  });
+  const updateCapaMut = useMutation({
+    mutationFn: ({ ncrId, capaId, data }) => ncrsApi.updateCapa(ncrId, capaId, data),
+    onSuccess: invalidate,
+  });
+  const deleteCapaMut = useMutation({
+    mutationFn: ({ ncrId, capaId }) => ncrsApi.removeCapa(ncrId, capaId),
+    onSuccess: invalidate,
+  });
 
   return {
     ncrs,
-    addNCR,
-    updateNCR,
-    deleteNCR,
-    getNCRById,
-    getNCRsByDefect,
-    getOpenNCRs,
-    addCAPA,
-    updateCAPA,
-    deleteCAPA,
+    isLoading,
+    error,
+    addNCR: (data) => addMut.mutateAsync(data),
+    updateNCR: (id, data) => updateMut.mutateAsync({ id, data }),
+    deleteNCR: (id) => deleteMut.mutateAsync(id),
+    addCAPA: (ncrId, data) => addCapaMut.mutateAsync({ ncrId, data }),
+    updateCAPA: (ncrId, capaId, data) => updateCapaMut.mutateAsync({ ncrId, capaId, data }),
+    deleteCAPA: (ncrId, capaId) => deleteCapaMut.mutateAsync({ ncrId, capaId }),
   };
 }

@@ -1,91 +1,43 @@
-import { useState } from "react";
-import { INITIAL_PRODUCTS } from "../data/constants";
-import { generateSKU } from "../utils/skuGenerator";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { productsApi } from "../lib/api";
 
 /**
- * Central hook for all product CRUD operations.
+ * Central hook for all product data + CRUD, backed by the REST API.
+ *
+ * React Query pattern used throughout the app:
+ *  - useQuery      → reads server data, exposes it as `products` and tracks
+ *                    isLoading / error for us automatically.
+ *  - useMutation   → performs a write (create/update/delete).
+ *  - invalidateQueries(["products"]) → after any write, marks the products
+ *                    cache stale so React Query refetches and every component
+ *                    showing products updates on its own.
+ *
+ * The returned function names (addProduct, updateProduct, …) match the old
+ * in-memory hook, so App.jsx barely changes — but the functions are now async
+ * and reject on failure, which the callers handle with try/catch.
  */
 export function useProducts() {
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["products"] });
 
-  /** Add a new product. SKU is generated here. */
-  function addProduct(formData) {
-    const newProduct = {
-      ...formData,
-      id: Date.now(),
-      sku: generateSKU(),
-      qty: Number(formData.qty),
-      price: Number(formData.price),
-      minStock: Number(formData.minStock),
-    };
-    setProducts((prev) => [...prev, newProduct]);
-  }
+  const { data: products = [], isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: productsApi.list,
+  });
 
-  /** Update an existing product by id. */
-  function updateProduct(id, formData) {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              ...formData,
-              id,
-              qty: Number(formData.qty),
-              price: Number(formData.price),
-              minStock: Number(formData.minStock),
-            }
-          : p
-      )
-    );
-  }
-
-  /** Remove a product by id. */
-  function deleteProduct(id) {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-  }
-
-  /** Return a single product by id, or undefined. */
-  function getProductById(id) {
-    return products.find((p) => p.id === id);
-  }
-
-  /** Increase a product's qty by the given amount (Inbound). */
-  function incrementStock(sku, qty) {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.sku === sku ? { ...p, qty: p.qty + Number(qty) } : p
-      )
-    );
-  }
-
-  /**
-   * Decrease a product's qty by the given amount (Outbound).
-   * Never goes below 0. Returns false if stock is insufficient, true on success.
-   * @param {string} sku
-   * @param {number} qty
-   * @returns {boolean}
-   */
-  function decrementStock(sku, qty) {
-    const product = products.find((p) => p.sku === sku);
-    if (!product || product.qty < Number(qty)) return false;
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.sku === sku
-          ? { ...p, qty: Math.max(0, p.qty - Number(qty)) }
-          : p
-      )
-    );
-    return true;
-  }
+  const addMut = useMutation({ mutationFn: productsApi.create, onSuccess: invalidate });
+  const updateMut = useMutation({
+    mutationFn: ({ id, data }) => productsApi.update(id, data),
+    onSuccess: invalidate,
+  });
+  const deleteMut = useMutation({ mutationFn: productsApi.remove, onSuccess: invalidate });
 
   return {
     products,
-    addProduct,
-    updateProduct,
-    deleteProduct,
-    getProductById,
-    incrementStock,
-    decrementStock,
+    isLoading,
+    error,
+    addProduct: (data) => addMut.mutateAsync(data),
+    updateProduct: (id, data) => updateMut.mutateAsync({ id, data }),
+    deleteProduct: (id) => deleteMut.mutateAsync(id),
   };
 }
-
