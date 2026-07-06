@@ -1,0 +1,201 @@
+// Prisma schema for the WMS (Warehouse Management System).
+// Models mirror the app's domain: inventory (Product/Movement) and
+// quality (Inspection/Criterion/Defect/NCR/CAPA), plus auth (User).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Auth ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  OPERATOR
+  QUALITY
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(OPERATOR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ── Inventory ───────────────────────────────────────────────────────────────
+
+model Product {
+  id       Int    @id @default(autoincrement())
+  sku      String @unique
+  name     String
+  category String
+  qty      Int    @default(0)
+  unit     String
+  price    Float  @default(0)
+  minStock Int    @default(0)
+  status   String @default("active") // "active" | "inactive"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations link back to this product by its SKU.
+  movements   Movement[]
+  inspections Inspection[]
+  defects     Defect[]
+
+  @@index([category])
+  @@index([status])
+}
+
+// Append-only stock ledger. Product name is denormalized so historical
+// records keep the name as it was at the time of the movement.
+model Movement {
+  id          Int      @id @default(autoincrement())
+  movementId  String   @unique // e.g. "MOV-0001"
+  type        String // "Inbound" | "Outbound"
+  qty         Int
+  unit        String
+  reason      String
+  reference   String?
+  notes       String?
+  performedBy String
+  timestamp   DateTime @default(now())
+
+  sku         String
+  productName String
+  product     Product @relation(fields: [sku], references: [sku])
+
+  inspections Inspection[]
+
+  @@index([sku])
+  @@index([type])
+}
+
+// ── Quality: Inspections ────────────────────────────────────────────────────
+
+model Inspection {
+  id            Int      @id @default(autoincrement())
+  inspectionId  String   @unique // e.g. "INS-0001"
+  type          String // "Incoming" | "Outgoing" | "In-Process"
+  quantity      Int
+  inspector     String
+  overallResult String // "Pass" | "Fail" | "Pending" (derived from criteria)
+  notes         String?
+  timestamp     DateTime @default(now())
+
+  sku         String
+  productName String
+  product     Product @relation(fields: [sku], references: [sku])
+
+  // Optional link to the movement that triggered this inspection.
+  movementRef String?
+  movement    Movement? @relation(fields: [movementRef], references: [movementId])
+
+  criteria Criterion[]
+  defects  Defect[]
+
+  @@index([sku])
+  @@index([overallResult])
+}
+
+// One checklist line within an inspection.
+model Criterion {
+  id     Int    @id @default(autoincrement())
+  code   String // e.g. "C1" (position within the inspection)
+  label  String
+  result String // "Pass" | "Fail" | "Pending"
+
+  inspectionId Int
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+}
+
+// ── Quality: Defects ────────────────────────────────────────────────────────
+
+model Defect {
+  id             Int       @id @default(autoincrement())
+  defectId       String    @unique // e.g. "DEF-0001"
+  criterionLabel String?
+  type           String
+  severity       String // "Critical" | "Major" | "Minor"
+  status         String    @default("Open") // Open | Under Review | Resolved | Closed
+  disposition    String
+  quantity       Int
+  description    String
+  rootCause      String?
+  reportedBy     String
+  assignedTo     String?
+  timestamp      DateTime  @default(now())
+  resolvedAt     DateTime?
+
+  sku         String
+  productName String
+  product     Product @relation(fields: [sku], references: [sku])
+
+  // Optional source inspection.
+  inspectionRef String?
+  inspection    Inspection? @relation(fields: [inspectionRef], references: [inspectionId])
+
+  ncrs NCR[]
+
+  @@index([sku])
+  @@index([status])
+  @@index([severity])
+}
+
+// ── Quality: NCR + CAPA ─────────────────────────────────────────────────────
+
+model NCR {
+  id              Int       @id @default(autoincrement())
+  ncrId           String    @unique // e.g. "NCR-0001"
+  type            String
+  priority        String // Critical | High | Medium | Low
+  status          String    @default("Open")
+  title           String
+  description     String
+  immediateAction String?
+  raisedBy        String
+  assignedTo      String?
+  targetDate      String? // stored as date string (yyyy-mm-dd) to match UI
+  closedAt        DateTime?
+  timestamp       DateTime  @default(now())
+
+  // Denormalized display fields carried from the originating defect.
+  defectSku   String?
+  productName String?
+
+  // Optional link to the defect that raised this NCR.
+  defectRef String?
+  defect    Defect? @relation(fields: [defectRef], references: [defectId])
+
+  capas CAPA[]
+
+  @@index([status])
+  @@index([priority])
+}
+
+model CAPA {
+  id                Int       @id @default(autoincrement())
+  capaId            String    @unique // e.g. "CAPA-0001"
+  type              String // "Corrective Action" | "Preventive Action"
+  status            String    @default("Planned")
+  description       String
+  assignedTo        String?
+  targetDate        String?
+  completedAt       DateTime?
+  verificationNotes String?
+  effectiveness     String    @default("Pending")
+
+  ncrId Int
+  ncr   NCR @relation(fields: [ncrId], references: [id], onDelete: Cascade)
+
+  @@index([ncrId])
+}

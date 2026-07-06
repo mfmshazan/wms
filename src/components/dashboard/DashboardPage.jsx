@@ -126,20 +126,20 @@ export function DashboardPage({ metrics }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+        <div className="flex flex-col">
           <p className="text-sm font-semibold text-wms-text mb-3 mt-6">
             Inspection Quality
           </p>
-          <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
+          <div className="bg-wms-surface border border-wms-border rounded-xl p-5 flex-1">
             <QualityTrendChart quality={quality} />
           </div>
         </div>
-        <div>
+        <div className="flex flex-col">
           <p className="text-sm font-semibold text-wms-text mb-3 mt-6">
             Defect Analysis
           </p>
-          <div className="bg-wms-surface border border-wms-border rounded-xl p-5">
+          <div className="bg-wms-surface border border-wms-border rounded-xl p-5 flex-1">
             <DefectChart defects={df} />
           </div>
         </div>

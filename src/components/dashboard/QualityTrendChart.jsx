@@ -19,9 +19,9 @@ export default function QualityTrendChart({ quality }) {
       : "text-wms-red";
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col h-full">
       {/* SECTION 1: Inline KPI row */}
-      <div className="flex items-center gap-6 flex-wrap">
+      <div className="flex items-center gap-6 flex-wrap mb-5">
         <div>
           <p className={`font-mono text-xl font-bold ${passRateColor}`}>
             {passRate}%
@@ -51,20 +51,21 @@ export default function QualityTrendChart({ quality }) {
       </div>
 
       {/* SECTION 2: Line chart */}
-      <div>
+      <div className="flex-1 flex flex-col min-h-[200px]">
         <p className="text-xs uppercase tracking-widest text-wms-muted mb-3">
           Inspection Results — Last 7 Days
         </p>
 
         {totalInspections === 0 ? (
-          <div className="h-48 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
             <p className="text-xs font-mono text-wms-muted">
               No inspection data yet
             </p>
           </div>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={200}>
+            <div className="flex-1 min-h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={inspectionTrend}
                 margin={{ top: 4, right: 8, left: -20, bottom: 0 }}
@@ -118,6 +119,7 @@ export default function QualityTrendChart({ quality }) {
                 />
               </LineChart>
             </ResponsiveContainer>
+            </div>
 
             <div className="flex items-center gap-4 mt-2 justify-center text-xs font-mono">
               <span className="flex items-center gap-1.5 text-wms-green">
