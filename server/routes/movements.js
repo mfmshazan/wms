@@ -5,6 +5,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
+const { requireRole } = require("../middleware/auth");
 const { movementCreate } = require("../validators/schemas");
 
 const router = express.Router();
@@ -58,8 +59,10 @@ router.post(
 );
 
 // DELETE /api/movements/:id — remove a ledger record (does NOT reverse stock).
+// ADMIN only.
 router.delete(
   "/:id",
+  requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     await prisma.movement.delete({ where: { id: Number(req.params.id) } });
     res.status(204).end();

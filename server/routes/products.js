@@ -3,6 +3,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
+const { requireRole } = require("../middleware/auth");
 const { productCreate, productUpdate } = require("../validators/schemas");
 const { nextProductSku } = require("../utils/ids");
 
@@ -55,9 +56,10 @@ router.put(
   })
 );
 
-// DELETE /api/products/:id
+// DELETE /api/products/:id — ADMIN only.
 router.delete(
   "/:id",
+  requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     await prisma.product.delete({ where: { id: Number(req.params.id) } });
     res.status(204).end();

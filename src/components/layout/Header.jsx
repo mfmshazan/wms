@@ -9,6 +9,12 @@ const pageTitles = {
   ncrs:        { title: "Non-Conformance Reports",    sub: "NCR workflow and CAPA management" },
 };
 
+const roleLabels = {
+  ADMIN: "Admin",
+  OPERATOR: "Operator",
+  QUALITY: "Quality",
+};
+
 export function Header({
   activeView,
   onAddProduct,
@@ -17,8 +23,16 @@ export function Header({
   onNewInspection,
   onLogDefect,
   onRaiseNCR,
+  user,
+  onLogout,
 }) {
   const { title, sub } = pageTitles[activeView] || pageTitles.dashboard;
+  const initials = (user?.name || "?")
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <header className="sticky top-0 z-20 bg-wms-surface border-b border-wms-border px-6 h-16 flex items-center justify-between shadow-sm">
@@ -79,6 +93,32 @@ export function Header({
             </svg>
             Raise NCR
           </Button>
+        )}
+
+        {/* ── User + logout ── */}
+        {user && (
+          <div className="flex items-center gap-3 pl-3 ml-1 border-l border-wms-border">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-wms-purple/10 text-wms-purple flex items-center justify-center text-xs font-semibold">
+                {initials}
+              </div>
+              <div className="leading-tight hidden sm:block">
+                <p className="text-xs font-medium text-wms-text">{user.name}</p>
+                <p className="text-[10px] uppercase tracking-wide text-wms-muted">
+                  {roleLabels[user.role] || user.role}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onLogout}
+              title="Sign out"
+              className="p-2 rounded-lg text-wms-muted hover:text-wms-red hover:bg-red-50 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+            </button>
+          </div>
         )}
       </div>
     </header>

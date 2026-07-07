@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useAuth } from "./context/AuthContext";
+import { LoginPage } from "./components/auth/LoginPage";
 import { useProducts } from "./hooks/useProducts";
 import { useMovements } from "./hooks/useMovements";
 import { useInspections } from "./hooks/useInspections";
@@ -50,7 +52,9 @@ import { NCRDetailModal } from "./components/quality/NCRDetailModal";
 import { CAPAForm } from "./components/quality/CAPAForm";
 import { CAPAStatusModal } from "./components/quality/CAPAStatusModal";
 
-export default function App() {
+function MainApp() {
+  const { user, isAdmin, logout } = useAuth();
+
   // ── Hooks ──────────────────────────────────────────────────────────────────
   const {
     products,
@@ -371,6 +375,8 @@ export default function App() {
         {/* ── Top bar ── */}
         <Header
           activeView={activeView}
+          user={user}
+          onLogout={logout}
           onAddProduct={handleAddClick}
           onReceive={() => setModal("receive")}
           onDispatch={() => setModal("dispatch")}
@@ -404,6 +410,7 @@ export default function App() {
                 products={filteredProducts}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
+                canDelete={isAdmin}
               />
             </>
           )}
@@ -415,6 +422,7 @@ export default function App() {
                 movements={movements}
                 products={products}
                 onDelete={handleDeleteMovement}
+                canDelete={isAdmin}
               />
             </>
           )}
@@ -427,6 +435,7 @@ export default function App() {
                 onView={handleViewInspection}
                 onDelete={handleDeleteInspection}
                 onLogDefect={handleConvertInspectionToDefect}
+                canDelete={isAdmin}
               />
             </>
           )}
@@ -440,6 +449,7 @@ export default function App() {
                 onEdit={handleEditDefect}
                 onDelete={handleDeleteDefect}
                 onConvertToNCR={handleConvertToNCR}
+                canDelete={isAdmin}
               />
             </>
           )}
@@ -452,6 +462,7 @@ export default function App() {
                 onView={handleViewNCR}
                 onDelete={handleDeleteNCR}
                 onStatusChange={handleNCRStatusChange}
+                canDelete={isAdmin}
               />
             </>
           )}
@@ -601,4 +612,23 @@ export default function App() {
       />
     </div>
   );
+}
+
+/**
+ * Auth gate: shows a loading state while validating a stored session, the
+ * login page when signed out, and the full app once authenticated. MainApp
+ * (and its data queries) only mount when there's a valid session.
+ */
+export default function App() {
+  const { loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-wms-bg text-wms-muted text-sm">
+        Loading…
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <MainApp /> : <LoginPage />;
 }

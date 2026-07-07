@@ -4,6 +4,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
+const { requireRole } = require("../middleware/auth");
 const { inspectionCreate, inspectionUpdate } = require("../validators/schemas");
 const { nextInspectionId } = require("../utils/ids");
 
@@ -82,9 +83,10 @@ router.put(
   })
 );
 
-// DELETE /api/inspections/:id (criteria cascade automatically).
+// DELETE /api/inspections/:id (criteria cascade automatically). ADMIN only.
 router.delete(
   "/:id",
+  requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     await prisma.inspection.delete({ where: { id: Number(req.params.id) } });
     res.status(204).end();

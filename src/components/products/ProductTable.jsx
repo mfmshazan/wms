@@ -13,7 +13,7 @@ const COLUMNS = [
 /**
  * ProductTable — sortable, with edit/delete row actions.
  */
-export function ProductTable({ products, onEdit, onDelete }) {
+export function ProductTable({ products, onEdit, onDelete, canDelete = true }) {
   const [sortKey, setSortKey] = useState("sku");
   const [sortDir, setSortDir] = useState("asc");
 
@@ -156,13 +156,15 @@ export function ProductTable({ products, onEdit, onDelete }) {
                       >
                         Edit
                       </button>
-                      <button
-                        id={`delete-${product.id}`}
-                        onClick={() => onDelete(product)}
-                        className="px-2.5 py-1 rounded text-xs font-mono text-wms-red hover:bg-red-900/20 transition-colors"
-                      >
-                        Delete
-                      </button>
+                      {canDelete && (
+                        <button
+                          id={`delete-${product.id}`}
+                          onClick={() => onDelete(product)}
+                          className="px-2.5 py-1 rounded text-xs font-mono text-wms-red hover:bg-red-900/20 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

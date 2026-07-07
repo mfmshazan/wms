@@ -41,7 +41,7 @@ function statusVariant(status) {
  *   onDelete(defect) - delete the record
  *   onConvertToNCR(defect) - trigger NCR flow
  */
-export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR }) {
+export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR, canDelete = true }) {
   const [severityFilter, setSeverityFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [skuSearch, setSkuSearch] = useState("");
@@ -263,6 +263,7 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR 
                             />
                           </svg>
                         </Button>
+                        {canDelete && (
                         <Button
                           variant="ghost"
                           onClick={() => onDelete(def)}
@@ -282,6 +283,7 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR 
                             />
                           </svg>
                         </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

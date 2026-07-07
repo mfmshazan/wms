@@ -31,7 +31,7 @@ function resultVariant(result) {
  *   onView(inspection) - open detail modal
  *   onDelete(inspection) - delete the record
  */
-export function InspectionTable({ inspections, onView, onDelete, onLogDefect }) {
+export function InspectionTable({ inspections, onView, onDelete, onLogDefect, canDelete = true }) {
   const [typeFilter, setTypeFilter] = useState("All");
   const [resultFilter, setResultFilter] = useState("All");
   const [skuSearch, setSkuSearch] = useState("");
@@ -236,6 +236,7 @@ export function InspectionTable({ inspections, onView, onDelete, onLogDefect }) 
                             </svg>
                           </Button>
                           {/* Delete */}
+                          {canDelete && (
                           <Button
                             variant="ghost"
                             onClick={() => onDelete(ins)}
@@ -255,6 +256,7 @@ export function InspectionTable({ inspections, onView, onDelete, onLogDefect }) 
                               />
                             </svg>
                           </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

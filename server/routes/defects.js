@@ -3,6 +3,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
+const { requireRole } = require("../middleware/auth");
 const { defectCreate, defectUpdate } = require("../validators/schemas");
 const { nextDefectId } = require("../utils/ids");
 
@@ -61,9 +62,10 @@ router.put(
   })
 );
 
-// DELETE /api/defects/:id
+// DELETE /api/defects/:id — ADMIN only.
 router.delete(
   "/:id",
+  requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     await prisma.defect.delete({ where: { id: Number(req.params.id) } });
     res.status(204).end();

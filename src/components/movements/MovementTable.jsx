@@ -25,7 +25,7 @@ function formatTimestamp(iso) {
  *   products  - full array from useProducts (used for low-stock context if needed)
  *   onDelete(movement) - called when user clicks delete
  */
-export function MovementTable({ movements, onDelete }) {
+export function MovementTable({ movements, onDelete, canDelete = true }) {
   const [typeFilter, setTypeFilter] = useState("All");
   const [skuSearch, setSkuSearch] = useState("");
   const [dateRange, setDateRange] = useState("All");
@@ -229,6 +229,7 @@ export function MovementTable({ movements, onDelete }) {
 
                     {/* Delete */}
                     <td className="px-4 py-3">
+                      {canDelete && (
                       <Button
                         variant="ghost"
                         onClick={() => onDelete(m)}
@@ -248,6 +249,7 @@ export function MovementTable({ movements, onDelete }) {
                           />
                         </svg>
                       </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -8,12 +8,31 @@
 // defectId). The mapping helpers below translate at the boundary so the React
 // components keep their original field names.
 
+const TOKEN_KEY = "wms_token";
+
+export const tokenStore = {
+  get: () => localStorage.getItem(TOKEN_KEY),
+  set: (t) => localStorage.setItem(TOKEN_KEY, t),
+  clear: () => localStorage.removeItem(TOKEN_KEY),
+};
+
 async function request(path, { method = "GET", body } = {}) {
+  const token = tokenStore.get();
+  const headers = {};
+  if (body) headers["Content-Type"] = "application/json";
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const res = await fetch(`/api${path}`, {
     method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+
+  // Session expired/invalid: clear it and let the app fall back to login.
+  if (res.status === 401) {
+    tokenStore.clear();
+    window.dispatchEvent(new Event("wms:unauthorized"));
+  }
 
   if (res.status === 204) return null;
 
@@ -23,6 +42,15 @@ async function request(path, { method = "GET", body } = {}) {
   }
   return data;
 }
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+export const authApi = {
+  login: (email, password) =>
+    request("/auth/login", { method: "POST", body: { email, password } }),
+  register: (name, email, password) =>
+    request("/auth/register", { method: "POST", body: { name, email, password } }),
+  me: () => request("/auth/me"),
+};
 
 // "None"/empty → null, otherwise the value. Forms use "None" for optional links.
 const orNull = (v) => (v && v !== "None" ? v : null);

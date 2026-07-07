@@ -4,6 +4,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
+const { requireRole } = require("../middleware/auth");
 const {
   ncrCreate,
   ncrUpdate,
@@ -71,9 +72,10 @@ router.put(
   })
 );
 
-// DELETE /api/ncrs/:id (CAPAs cascade automatically).
+// DELETE /api/ncrs/:id (CAPAs cascade automatically). ADMIN only.
 router.delete(
   "/:id",
+  requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
     await prisma.nCR.delete({ where: { id: Number(req.params.id) } });
     res.status(204).end();
