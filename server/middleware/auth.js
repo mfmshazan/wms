@@ -16,6 +16,7 @@ function requireAuth(req, res, next) {
       email: payload.email,
       name: payload.name,
       role: payload.role,
+      organizationId: payload.org,
     };
     next();
   } catch {

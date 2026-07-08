@@ -11,6 +11,7 @@ export function LoginPage() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [name, setName] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,7 +25,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       if (isRegister) {
-        await register(name, email, password);
+        await register(name, email, password, organizationName);
       } else {
         await login(email, password);
       }
@@ -54,13 +55,22 @@ export function LoginPage() {
           className="bg-white border border-wms-border rounded-2xl p-6 shadow-sm flex flex-col gap-4"
         >
           {isRegister && (
-            <Input
-              id="name"
-              label="Full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Jane Doe"
-            />
+            <>
+              <Input
+                id="name"
+                label="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Jane Doe"
+              />
+              <Input
+                id="organizationName"
+                label="Organization / Warehouse name"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
+                placeholder="Acme Warehouse"
+              />
+            </>
           )}
           <Input
             id="email"

@@ -11,11 +11,14 @@ const router = express.Router();
 
 const isResolved = (status) => status === "Resolved" || status === "Closed";
 
-// GET /api/defects — newest first.
+// GET /api/defects — this org's defects, newest first.
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const defects = await prisma.defect.findMany({ orderBy: { timestamp: "desc" } });
+    const defects = await prisma.defect.findMany({
+      where: { organizationId: req.user.organizationId },
+      orderBy: { timestamp: "desc" },
+    });
     res.json(defects);
   })
 );
@@ -30,6 +33,7 @@ router.post(
       data: {
         ...req.body,
         defectId,
+        organizationId: req.user.organizationId,
         resolvedAt: isResolved(req.body.status) ? new Date() : null,
       },
     });
@@ -46,10 +50,12 @@ router.put(
     const id = Number(req.params.id);
     const data = { ...req.body };
 
-    if (req.body.status !== undefined) {
-      const current = await prisma.defect.findUnique({ where: { id } });
-      if (!current) return res.status(404).json({ error: "Defect not found" });
+    const current = await prisma.defect.findFirst({
+      where: { id, organizationId: req.user.organizationId },
+    });
+    if (!current) return res.status(404).json({ error: "Defect not found" });
 
+    if (req.body.status !== undefined) {
       if (isResolved(req.body.status) && !current.resolvedAt) {
         data.resolvedAt = new Date();
       } else if (!isResolved(req.body.status)) {
@@ -62,12 +68,15 @@ router.put(
   })
 );
 
-// DELETE /api/defects/:id — ADMIN only.
+// DELETE /api/defects/:id — ADMIN only, scoped to the org.
 router.delete(
   "/:id",
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
-    await prisma.defect.delete({ where: { id: Number(req.params.id) } });
+    const { count } = await prisma.defect.deleteMany({
+      where: { id: Number(req.params.id), organizationId: req.user.organizationId },
+    });
+    if (count === 0) return res.status(404).json({ error: "Defect not found" });
     res.status(204).end();
   })
 );

@@ -14,7 +14,9 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   name: z.string().min(1),
-  // Self-registration only ever creates OPERATOR accounts.
+  // The company/warehouse this account belongs to. Registration creates a brand
+  // new organization, and the first user becomes its ADMIN.
+  organizationName: z.string().min(1),
 });
 
 const loginSchema = z.object({
@@ -27,7 +29,7 @@ router.post(
   "/register",
   validate(registerSchema),
   asyncHandler(async (req, res) => {
-    const { email, password, name } = req.body;
+    const { email, password, name, organizationName } = req.body;
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -35,9 +37,18 @@ router.post(
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: { email, name, passwordHash, role: "OPERATOR" },
+
+    // Create the organization and its first user (an ADMIN) together.
+    const org = await prisma.organization.create({
+      data: {
+        name: organizationName,
+        users: {
+          create: { email, name, passwordHash, role: "ADMIN" },
+        },
+      },
+      include: { users: true },
     });
+    const user = org.users[0];
 
     const token = signToken(user);
     res.status(201).json({ token, user: publicUser(user) });

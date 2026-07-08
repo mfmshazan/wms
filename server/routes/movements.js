@@ -10,11 +10,12 @@ const { movementCreate } = require("../validators/schemas");
 
 const router = express.Router();
 
-// GET /api/movements — all movements, newest first.
+// GET /api/movements — this org's movements, newest first.
 router.get(
   "/",
   asyncHandler(async (req, res) => {
     const movements = await prisma.movement.findMany({
+      where: { organizationId: req.user.organizationId },
       orderBy: { timestamp: "desc" },
     });
     res.json(movements);
@@ -28,9 +29,11 @@ router.post(
   validate(movementCreate),
   asyncHandler(async (req, res) => {
     const { type, sku, qty } = req.body;
+    const organizationId = req.user.organizationId;
 
     const result = await prisma.$transaction(async (tx) => {
-      const product = await tx.product.findUnique({ where: { sku } });
+      // Only match a product that belongs to this org.
+      const product = await tx.product.findFirst({ where: { sku, organizationId } });
       if (!product) {
         const err = new Error(`Unknown SKU: ${sku}`);
         err.status = 400;
@@ -50,7 +53,7 @@ router.post(
 
       const movementId = await nextMovementIdTx(tx);
       return tx.movement.create({
-        data: { ...req.body, movementId },
+        data: { ...req.body, movementId, organizationId },
       });
     });
 
@@ -59,12 +62,15 @@ router.post(
 );
 
 // DELETE /api/movements/:id — remove a ledger record (does NOT reverse stock).
-// ADMIN only.
+// ADMIN only, scoped to the org.
 router.delete(
   "/:id",
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
-    await prisma.movement.delete({ where: { id: Number(req.params.id) } });
+    const { count } = await prisma.movement.deleteMany({
+      where: { id: Number(req.params.id), organizationId: req.user.organizationId },
+    });
+    if (count === 0) return res.status(404).json({ error: "Movement not found" });
     res.status(204).end();
   })
 );

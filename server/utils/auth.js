@@ -7,7 +7,13 @@ const EXPIRES_IN = "7d";
 
 function signToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email, name: user.name, role: user.role },
+    {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      org: user.organizationId,
+    },
     SECRET,
     { expiresIn: EXPIRES_IN }
   );
@@ -19,7 +25,13 @@ function verifyToken(token) {
 
 // Shape the user object we expose to clients (never include passwordHash).
 function publicUser(user) {
-  return { id: user.id, email: user.email, name: user.name, role: user.role };
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    organizationId: user.organizationId,
+  };
 }
 
 module.exports = { signToken, verifyToken, publicUser };

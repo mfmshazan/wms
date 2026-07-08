@@ -32,6 +32,7 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     const inspections = await prisma.inspection.findMany({
+      where: { organizationId: req.user.organizationId },
       orderBy: { timestamp: "desc" },
       include: { criteria: { orderBy: { id: "asc" } } },
     });
@@ -50,6 +51,7 @@ router.post(
       data: {
         ...rest,
         inspectionId,
+        organizationId: req.user.organizationId,
         overallResult: computeOverallResult(criteria),
         criteria: { create: withCodes(criteria) },
       },
@@ -66,6 +68,11 @@ router.put(
   asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
     const { criteria, ...rest } = req.body;
+
+    const existing = await prisma.inspection.findFirst({
+      where: { id, organizationId: req.user.organizationId },
+    });
+    if (!existing) return res.status(404).json({ error: "Inspection not found" });
 
     const data = { ...rest };
     if (criteria) {
@@ -88,7 +95,10 @@ router.delete(
   "/:id",
   requireRole("ADMIN"),
   asyncHandler(async (req, res) => {
-    await prisma.inspection.delete({ where: { id: Number(req.params.id) } });
+    const { count } = await prisma.inspection.deleteMany({
+      where: { id: Number(req.params.id), organizationId: req.user.organizationId },
+    });
+    if (count === 0) return res.status(404).json({ error: "Inspection not found" });
     res.status(204).end();
   })
 );

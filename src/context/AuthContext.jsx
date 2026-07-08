@@ -48,8 +48,13 @@ export function AuthProvider({ children }) {
     setUser(user);
   }
 
-  async function register(name, email, password) {
-    const { token, user } = await authApi.register(name, email, password);
+  async function register(name, email, password, organizationName) {
+    const { token, user } = await authApi.register(
+      name,
+      email,
+      password,
+      organizationName
+    );
     tokenStore.set(token);
     setUser(user);
   }

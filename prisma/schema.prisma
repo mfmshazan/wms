@@ -11,6 +11,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ── Tenancy ─────────────────────────────────────────────────────────────────
+
+// Each Organization is an isolated tenant (one company's warehouse). Every
+// row of data belongs to exactly one org, and all queries are scoped by it.
+model Organization {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  products    Product[]
+  movements   Movement[]
+  inspections Inspection[]
+  defects     Defect[]
+  ncrs        NCR[]
+}
+
 // ── Auth ────────────────────────────────────────────────────────────────────
 
 enum Role {
@@ -27,6 +45,11 @@ model User {
   role         Role     @default(OPERATOR)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
 }
 
 // ── Inventory ───────────────────────────────────────────────────────────────
@@ -45,11 +68,15 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   // Relations link back to this product by its SKU.
   movements   Movement[]
   inspections Inspection[]
   defects     Defect[]
 
+  @@index([organizationId])
   @@index([category])
   @@index([status])
 }
@@ -72,8 +99,12 @@ model Movement {
   productName String
   product     Product @relation(fields: [sku], references: [sku])
 
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   inspections Inspection[]
 
+  @@index([organizationId])
   @@index([sku])
   @@index([type])
 }
@@ -98,9 +129,13 @@ model Inspection {
   movementRef String?
   movement    Movement? @relation(fields: [movementRef], references: [movementId])
 
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   criteria Criterion[]
   defects  Defect[]
 
+  @@index([organizationId])
   @@index([sku])
   @@index([overallResult])
 }
@@ -144,8 +179,12 @@ model Defect {
   inspectionRef String?
   inspection    Inspection? @relation(fields: [inspectionRef], references: [inspectionId])
 
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   ncrs NCR[]
 
+  @@index([organizationId])
   @@index([sku])
   @@index([status])
   @@index([severity])
@@ -176,8 +215,12 @@ model NCR {
   defectRef String?
   defect    Defect? @relation(fields: [defectRef], references: [defectId])
 
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   capas CAPA[]
 
+  @@index([organizationId])
   @@index([status])
   @@index([priority])
 }
