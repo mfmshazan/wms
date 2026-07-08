@@ -4,7 +4,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
-const { requireRole } = require("../middleware/auth");
+const { requireRole, requireWrite } = require("../middleware/auth");
 const {
   ncrCreate,
   ncrUpdate,
@@ -35,6 +35,7 @@ router.get(
 // POST /api/ncrs
 router.post(
   "/",
+  requireWrite("quality"),
   validate(ncrCreate),
   asyncHandler(async (req, res) => {
     const ncrId = await nextNcrId();
@@ -54,6 +55,7 @@ router.post(
 // PUT /api/ncrs/:id — closedAt is stamped/cleared as status crosses "Closed".
 router.put(
   "/:id",
+  requireWrite("quality"),
   validate(ncrUpdate),
   asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
@@ -96,6 +98,7 @@ router.delete(
 // POST /api/ncrs/:ncrId/capas — the parent NCR must belong to this org.
 router.post(
   "/:ncrId/capas",
+  requireWrite("quality"),
   validate(capaCreate),
   asyncHandler(async (req, res) => {
     const parent = await prisma.nCR.findFirst({
@@ -119,6 +122,7 @@ router.post(
 // PUT /api/ncrs/:ncrId/capas/:capaId — completedAt stamped when Completed/Verified.
 router.put(
   "/:ncrId/capas/:capaId",
+  requireWrite("quality"),
   validate(capaUpdate),
   asyncHandler(async (req, res) => {
     const { capaId } = req.params;
@@ -144,6 +148,7 @@ router.put(
 // DELETE /api/ncrs/:ncrId/capas/:capaId — org-scoped via the parent NCR.
 router.delete(
   "/:ncrId/capas/:capaId",
+  requireWrite("quality"),
   asyncHandler(async (req, res) => {
     const { count } = await prisma.cAPA.deleteMany({
       where: {

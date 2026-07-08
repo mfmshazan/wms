@@ -4,7 +4,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
-const { requireRole } = require("../middleware/auth");
+const { requireRole, requireWrite } = require("../middleware/auth");
 const { inspectionCreate, inspectionUpdate } = require("../validators/schemas");
 const { nextInspectionId } = require("../utils/ids");
 
@@ -43,6 +43,7 @@ router.get(
 // POST /api/inspections
 router.post(
   "/",
+  requireWrite("quality"),
   validate(inspectionCreate),
   asyncHandler(async (req, res) => {
     const { criteria, ...rest } = req.body;
@@ -64,6 +65,7 @@ router.post(
 // PUT /api/inspections/:id — replaces criteria and recomputes overallResult.
 router.put(
   "/:id",
+  requireWrite("quality"),
   validate(inspectionUpdate),
   asyncHandler(async (req, res) => {
     const id = Number(req.params.id);

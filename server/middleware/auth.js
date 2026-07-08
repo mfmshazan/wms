@@ -35,4 +35,28 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { requireAuth, requireRole };
+// Which write domain each non-admin role owns. ADMIN owns everything.
+const DOMAIN_BY_ROLE = {
+  OPERATOR: "inventory", // products, movements
+  QUALITY: "quality", // inspections, defects, NCRs, CAPAs
+};
+
+// canWrite — true if the role may modify the given domain's records.
+function canWrite(role, domain) {
+  return role === "ADMIN" || DOMAIN_BY_ROLE[role] === domain;
+}
+
+// requireWrite(domain) — guards create/update routes so each role can only
+// modify its own domain ("inventory" | "quality").
+function requireWrite(domain) {
+  return (req, res, next) => {
+    if (!req.user || !canWrite(req.user.role, domain)) {
+      return res
+        .status(403)
+        .json({ error: `Your role (${req.user?.role}) can't modify ${domain} records` });
+    }
+    next();
+  };
+}
+
+module.exports = { requireAuth, requireRole, requireWrite, canWrite };

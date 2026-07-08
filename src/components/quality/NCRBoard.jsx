@@ -17,7 +17,7 @@ function getNextStatus(currentStatus) {
   return null;
 }
 
-export function NCRBoard({ ncrs, onView, onDelete, onStatusChange, canDelete = true }) {
+export function NCRBoard({ ncrs, onView, onDelete, onStatusChange, canManage = true, canDelete = true }) {
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
   const [assigneeSearch, setAssigneeSearch] = useState("");
@@ -170,7 +170,7 @@ export function NCRBoard({ ncrs, onView, onDelete, onStatusChange, canDelete = t
                           View
                         </button>
 
-                        {nextStatus ? (
+                        {canManage && nextStatus ? (
                           <button
                             onClick={() => onStatusChange(ncr, nextStatus)}
                             className="px-2 py-1 text-xs border border-wms-blue text-wms-blue rounded hover:bg-blue-900/20 transition-colors"

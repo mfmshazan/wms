@@ -31,7 +31,7 @@ function resultVariant(result) {
  *   onView(inspection) - open detail modal
  *   onDelete(inspection) - delete the record
  */
-export function InspectionTable({ inspections, onView, onDelete, onLogDefect, canDelete = true }) {
+export function InspectionTable({ inspections, onView, onDelete, onLogDefect, canLogDefect = true, canDelete = true }) {
   const [typeFilter, setTypeFilter] = useState("All");
   const [resultFilter, setResultFilter] = useState("All");
   const [skuSearch, setSkuSearch] = useState("");
@@ -281,7 +281,7 @@ export function InspectionTable({ inspections, onView, onDelete, onLogDefect, ca
         <InspectionDetailModal
           inspection={viewInspection}
           onClose={() => setViewInspection(null)}
-          onLogDefect={onLogDefect}
+          onLogDefect={canLogDefect ? onLogDefect : undefined}
         />
       )}
     </>

@@ -35,7 +35,7 @@ function statusVariant(status) {
  *   onClose - closes the modal
  *   onEdit(defect) - opens the status edit modal
  */
-export function DefectDetailModal({ defect, onClose, onEdit }) {
+export function DefectDetailModal({ defect, onClose, onEdit, canEdit = true }) {
   if (!defect) return null;
 
   return (
@@ -143,9 +143,11 @@ export function DefectDetailModal({ defect, onClose, onEdit }) {
           <Button variant="ghost" onClick={onClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={() => onEdit(defect)}>
-            Edit Status & Details
-          </Button>
+          {canEdit && (
+            <Button variant="primary" onClick={() => onEdit(defect)}>
+              Edit Status & Details
+            </Button>
+          )}
         </div>
       </div>
     </Modal>

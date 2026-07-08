@@ -41,6 +41,7 @@ export function NCRDetailModal({
   onDeleteCAPA,
   onStatusChange,
   onViewDefect,
+  canManage = true,
 }) {
   if (!ncr) return null;
 
@@ -121,7 +122,7 @@ export function NCRDetailModal({
                 return (
                   <button
                     key={status}
-                    disabled={isCurrent || !canMoveTo}
+                    disabled={isCurrent || !canMoveTo || !canManage}
                     onClick={() => onStatusChange(ncr, status)}
                     className={`flex-1 text-center py-2 px-3 text-xs font-mono rounded-md transition-all whitespace-nowrap ${
                       isCurrent
@@ -207,9 +208,11 @@ export function NCRDetailModal({
             <p className="text-xs uppercase tracking-widest text-wms-muted">
               CAPA Actions ({ncr.capas?.length || 0})
             </p>
-            <Button variant="ghost" onClick={() => onAddCAPA(ncr.ncrId)} className="!py-1 !px-2 text-xs">
-              + Add CAPA
-            </Button>
+            {canManage && (
+              <Button variant="ghost" onClick={() => onAddCAPA(ncr.ncrId)} className="!py-1 !px-2 text-xs">
+                + Add CAPA
+              </Button>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
@@ -243,10 +246,12 @@ export function NCRDetailModal({
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => onUpdateCAPA(ncr.ncrId, capa)} className="text-xs text-wms-blue hover:underline">Edit</button>
-                      <button onClick={() => onDeleteCAPA(ncr.ncrId, capa.capaId)} className="text-xs text-wms-red hover:underline">Delete</button>
-                    </div>
+                    {canManage && (
+                      <div className="flex gap-2">
+                        <button onClick={() => onUpdateCAPA(ncr.ncrId, capa)} className="text-xs text-wms-blue hover:underline">Edit</button>
+                        <button onClick={() => onDeleteCAPA(ncr.ncrId, capa.capaId)} className="text-xs text-wms-red hover:underline">Delete</button>
+                      </div>
+                    )}
                   </div>
 
                   <p className="text-sm text-wms-text">{capa.description}</p>

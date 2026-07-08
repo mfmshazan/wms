@@ -3,7 +3,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
-const { requireRole } = require("../middleware/auth");
+const { requireRole, requireWrite } = require("../middleware/auth");
 const { defectCreate, defectUpdate } = require("../validators/schemas");
 const { nextDefectId } = require("../utils/ids");
 
@@ -26,6 +26,7 @@ router.get(
 // POST /api/defects — resolvedAt is stamped automatically when created resolved.
 router.post(
   "/",
+  requireWrite("quality"),
   validate(defectCreate),
   asyncHandler(async (req, res) => {
     const defectId = await nextDefectId();
@@ -45,6 +46,7 @@ router.post(
 // resolvedAt is set when moving into a resolved state and cleared when leaving.
 router.put(
   "/:id",
+  requireWrite("quality"),
   validate(defectUpdate),
   asyncHandler(async (req, res) => {
     const id = Number(req.params.id);

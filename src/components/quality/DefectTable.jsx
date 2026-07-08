@@ -41,7 +41,7 @@ function statusVariant(status) {
  *   onDelete(defect) - delete the record
  *   onConvertToNCR(defect) - trigger NCR flow
  */
-export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR, canDelete = true }) {
+export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR, canEdit = true, canDelete = true }) {
   const [severityFilter, setSeverityFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [skuSearch, setSkuSearch] = useState("");
@@ -231,7 +231,7 @@ export function DefectTable({ defects, onView, onEdit, onDelete, onConvertToNCR,
                     {/* Actions */}
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1.5">
-                        {def.status !== "Closed" && def.status !== "Resolved" && (
+                        {canEdit && def.status !== "Closed" && def.status !== "Resolved" && (
                           <button
                             onClick={() => onConvertToNCR(def)}
                             className="px-2 py-1 rounded text-xs text-wms-purple hover:bg-indigo-50 transition-colors whitespace-nowrap font-medium"

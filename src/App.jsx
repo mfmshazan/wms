@@ -54,7 +54,9 @@ import { CAPAForm } from "./components/quality/CAPAForm";
 import { CAPAStatusModal } from "./components/quality/CAPAStatusModal";
 
 function MainApp() {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, canWrite, logout } = useAuth();
+  const canInventory = canWrite("inventory");
+  const canQuality = canWrite("quality");
 
   // ── Hooks ──────────────────────────────────────────────────────────────────
   const {
@@ -378,6 +380,8 @@ function MainApp() {
           activeView={activeView}
           user={user}
           onLogout={logout}
+          canInventory={canInventory}
+          canQuality={canQuality}
           onAddProduct={handleAddClick}
           onReceive={() => setModal("receive")}
           onDispatch={() => setModal("dispatch")}
@@ -411,6 +415,7 @@ function MainApp() {
                 products={filteredProducts}
                 onEdit={handleEditClick}
                 onDelete={handleDeleteClick}
+                canEdit={canInventory}
                 canDelete={isAdmin}
               />
             </>
@@ -436,6 +441,7 @@ function MainApp() {
                 onView={handleViewInspection}
                 onDelete={handleDeleteInspection}
                 onLogDefect={handleConvertInspectionToDefect}
+                canLogDefect={canQuality}
                 canDelete={isAdmin}
               />
             </>
@@ -450,6 +456,7 @@ function MainApp() {
                 onEdit={handleEditDefect}
                 onDelete={handleDeleteDefect}
                 onConvertToNCR={handleConvertToNCR}
+                canEdit={canQuality}
                 canDelete={isAdmin}
               />
             </>
@@ -463,6 +470,7 @@ function MainApp() {
                 onView={handleViewNCR}
                 onDelete={handleDeleteNCR}
                 onStatusChange={handleNCRStatusChange}
+                canManage={canQuality}
                 canDelete={isAdmin}
               />
             </>
@@ -539,6 +547,7 @@ function MainApp() {
             setSelectedDefect(null);
           }}
           onEdit={handleEditDefect}
+          canEdit={canQuality}
         />
       )}
 
@@ -570,6 +579,7 @@ function MainApp() {
         <NCRDetailModal
           ncr={ncrs.find((n) => n.id === selectedNCR?.id) || selectedNCR}
           defects={defects}
+          canManage={canQuality}
           onClose={() => {
             setModal(null);
             setSelectedNCR(null);

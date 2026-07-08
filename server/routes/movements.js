@@ -5,7 +5,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
-const { requireRole } = require("../middleware/auth");
+const { requireRole, requireWrite } = require("../middleware/auth");
 const { movementCreate } = require("../validators/schemas");
 
 const router = express.Router();
@@ -26,6 +26,7 @@ router.get(
 // Inbound increases stock; Outbound decreases it (rejected if insufficient).
 router.post(
   "/",
+  requireWrite("inventory"),
   validate(movementCreate),
   asyncHandler(async (req, res) => {
     const { type, sku, qty } = req.body;

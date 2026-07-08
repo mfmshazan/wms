@@ -59,11 +59,18 @@ export function AuthProvider({ children }) {
     setUser(user);
   }
 
+  // Which write domain each non-admin role owns (mirrors the server).
+  const DOMAIN_BY_ROLE = { OPERATOR: "inventory", QUALITY: "quality" };
+  // canWrite("inventory" | "quality") — may this user modify that domain?
+  const canWrite = (domain) =>
+    user?.role === "ADMIN" || DOMAIN_BY_ROLE[user?.role] === domain;
+
   const value = {
     user,
     loading,
     isAuthenticated: !!user,
     isAdmin: user?.role === "ADMIN",
+    canWrite,
     login,
     register,
     logout,

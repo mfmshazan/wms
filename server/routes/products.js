@@ -3,7 +3,7 @@ const express = require("express");
 const prisma = require("../db");
 const { asyncHandler } = require("../middleware/error");
 const { validate } = require("../middleware/validate");
-const { requireRole } = require("../middleware/auth");
+const { requireRole, requireWrite } = require("../middleware/auth");
 const { productCreate, productUpdate } = require("../validators/schemas");
 const { nextProductSku } = require("../utils/ids");
 
@@ -36,6 +36,7 @@ router.get(
 // POST /api/products — SKU is generated server-side; row is tied to the org.
 router.post(
   "/",
+  requireWrite("inventory"),
   validate(productCreate),
   asyncHandler(async (req, res) => {
     const sku = await nextProductSku();
@@ -49,6 +50,7 @@ router.post(
 // PUT /api/products/:id
 router.put(
   "/:id",
+  requireWrite("inventory"),
   validate(productUpdate),
   asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
