@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "./context/AuthContext";
 import { LoginPage } from "./components/auth/LoginPage";
+import { TeamPage } from "./components/team/TeamPage";
 import { useProducts } from "./hooks/useProducts";
 import { useMovements } from "./hooks/useMovements";
 import { useInspections } from "./hooks/useInspections";
@@ -465,6 +466,10 @@ function MainApp() {
                 canDelete={isAdmin}
               />
             </>
+          )}
+
+          {activeView === "team" && (
+            <TeamPage currentUser={user} isAdmin={isAdmin} showToast={showToast} />
           )}
         </main>
       </div>

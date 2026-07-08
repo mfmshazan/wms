@@ -21,6 +21,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api", requireAuth);
 
 // Feature routes.
+app.use("/api/users", require("./routes/users"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/movements", require("./routes/movements"));
 app.use("/api/inspections", require("./routes/inspections"));

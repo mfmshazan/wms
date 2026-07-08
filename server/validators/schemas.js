@@ -92,7 +92,22 @@ const capaCreate = z.object({
 });
 const capaUpdate = capaCreate.partial();
 
+// ── Users / Team ─────────────────────────────────────────────────────────────
+const ROLES = ["ADMIN", "OPERATOR", "QUALITY"];
+
+const userCreate = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6),
+  role: z.enum(ROLES).default("OPERATOR"),
+});
+const userRoleUpdate = z.object({
+  role: z.enum(ROLES),
+});
+
 module.exports = {
+  userCreate,
+  userRoleUpdate,
   productCreate,
   productUpdate,
   movementCreate,

@@ -7,6 +7,7 @@ const pageTitles = {
   inspections: { title: "Quality Inspections",        sub: "Inspection checklists & audit trail" },
   defects:     { title: "Defect Log",                 sub: "Track and resolve product issues" },
   ncrs:        { title: "Non-Conformance Reports",    sub: "NCR workflow and CAPA management" },
+  team:        { title: "Team",                       sub: "Manage members and their roles" },
 };
 
 const roleLabels = {

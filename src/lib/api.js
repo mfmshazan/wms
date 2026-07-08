@@ -58,6 +58,15 @@ export const authApi = {
 // "None"/empty → null, otherwise the value. Forms use "None" for optional links.
 const orNull = (v) => (v && v !== "None" ? v : null);
 
+// ── Users / Team ─────────────────────────────────────────────────────────────
+export const usersApi = {
+  list: () => request("/users"),
+  create: (data) => request("/users", { method: "POST", body: data }),
+  updateRole: (id, role) =>
+    request(`/users/${id}/role`, { method: "PATCH", body: { role } }),
+  remove: (id) => request(`/users/${id}`, { method: "DELETE" }),
+};
+
 // ── Products ─────────────────────────────────────────────────────────────────
 export const productsApi = {
   list: () => request("/products"),
